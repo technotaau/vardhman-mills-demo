@@ -30,11 +30,14 @@ export interface IUser extends Document {
   facebookId?: string;
   loginAttempts?: number;
   lockUntil?: Date;
+  refreshToken?: string;
+  refreshTokenExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
   createPasswordResetToken(): string;
   createEmailVerificationToken(): string;
+  createRefreshToken(): string;
   incLoginAttempts(): Promise<IUser>;
   resetLoginAttempts(): Promise<IUser>;
   isLocked: boolean;
@@ -241,6 +244,14 @@ const userSchema = new Schema<IUser>({
   },
   lockUntil: {
     type: Date
+  },
+  refreshToken: {
+    type: String,
+    select: false  // Don't return refresh token in queries by default
+  },
+  refreshTokenExpires: {
+    type: Date,
+    select: false
   }
 }, {
   timestamps: true
@@ -304,6 +315,21 @@ userSchema.methods.createEmailVerificationToken = function(): string {
   this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
 
   return verificationToken;
+};
+
+// Create refresh token
+userSchema.methods.createRefreshToken = function(): string {
+  const refreshToken = crypto.randomBytes(40).toString('hex');
+
+  this.refreshToken = crypto
+    .createHash('sha256')
+    .update(refreshToken)
+    .digest('hex');
+
+  // Refresh token expires in 30 days
+  this.refreshTokenExpires = Date.now() + 30 * 24 * 60 * 60 * 1000;
+
+  return refreshToken;
 };
 
 // Constants for account lockout

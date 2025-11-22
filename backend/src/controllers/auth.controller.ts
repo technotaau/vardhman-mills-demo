@@ -248,6 +248,42 @@ export const getMe = (req: AuthRequest, res: Response, next: NextFunction) => {
   next();
 };
 
+// Refresh access token using refresh token
+export const refreshAccessToken = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  // Get refresh token from cookie or body
+  const { refreshToken } = req.cookies;
+  const refreshTokenBody = req.body.refreshToken;
+  const token = refreshToken || refreshTokenBody;
+
+  if (!token) {
+    return next(new AppError('Please provide a refresh token', 401));
+  }
+
+  // Hash the refresh token to match database
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(token)
+    .digest('hex');
+
+  // Find user with this refresh token
+  const user = await User.findOne({
+    refreshToken: hashedToken,
+    refreshTokenExpires: { $gt: Date.now() } // Check not expired
+  });
+
+  if (!user) {
+    return next(new AppError('Invalid or expired refresh token. Please login again.', 401));
+  }
+
+  // Check if user is active
+  if (!user.isActive) {
+    return next(new AppError('Your account has been deactivated.', 401));
+  }
+
+  // Generate new tokens
+  await createSendToken(user, 200, res);
+});
+
 // Social login handlers (to be implemented with Passport.js or similar)
 export const googleAuth = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   // Implementation depends on the OAuth library used
