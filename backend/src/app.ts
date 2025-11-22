@@ -170,11 +170,10 @@ app.get('/', (req, res) => {
       payments: '/api/v1/payments',
       settings: '/api/v1/settings',
       admin: '/api/admin'
-    },
-    adminCredentials: {
-      email: 'admin@vardhmanmills.com',
-      password: 'Admin@123'
     }
+    // 🔒 SECURITY: Admin credentials removed - never expose in API responses
+    // Default admin account is created during database seeding
+    // Check backend/src/scripts/seed.ts for initial admin setup
   });
 });
 

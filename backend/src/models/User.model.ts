@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { validatePassword } from '../utils/passwordValidator.js';
 
 export interface IUser extends Document {
   _id: string;
@@ -27,11 +28,16 @@ export interface IUser extends Document {
   passwordResetExpires?: Date;
   googleId?: string;
   facebookId?: string;
+  loginAttempts?: number;
+  lockUntil?: Date;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
   createPasswordResetToken(): string;
   createEmailVerificationToken(): string;
+  incLoginAttempts(): Promise<IUser>;
+  resetLoginAttempts(): Promise<IUser>;
+  isLocked: boolean;
 }
 
 export interface IAddress {
@@ -227,17 +233,44 @@ const userSchema = new Schema<IUser>({
   passwordResetToken: String,
   passwordResetExpires: Date,
   googleId: String,
-  facebookId: String
+  facebookId: String,
+  loginAttempts: {
+    type: Number,
+    required: true,
+    default: 0
+  },
+  lockUntil: {
+    type: Date
+  }
 }, {
   timestamps: true
 });
 
-// Hash password before saving
+// Validate password complexity and hash before saving
 userSchema.pre('save', async function(next) {
+  // Skip validation if password hasn't been modified
   if (!this.isModified('password')) return next();
-  
-  this.password = await bcrypt.hash(this.password, 12);
-  next();
+
+  // Skip validation for social login users (no password)
+  if (!this.password) return next();
+
+  try {
+    // Validate password complexity with user information to prevent using personal data
+    const userInfo = [this.firstName, this.lastName, this.email.split('@')[0]];
+    const validationResult = validatePassword(this.password, {}, userInfo);
+
+    if (!validationResult.isValid) {
+      const error = new Error(validationResult.errors.join('. '));
+      error.name = 'ValidationError';
+      return next(error);
+    }
+
+    // Hash password only after validation passes
+    this.password = await bcrypt.hash(this.password, 12);
+    next();
+  } catch (error) {
+    next(error as Error);
+  }
 });
 
 // Instance method to compare password
@@ -262,15 +295,55 @@ userSchema.methods.createPasswordResetToken = function(): string {
 // Create email verification token
 userSchema.methods.createEmailVerificationToken = function(): string {
   const verificationToken = crypto.randomBytes(32).toString('hex');
-  
+
   this.emailVerificationToken = crypto
     .createHash('sha256')
     .update(verificationToken)
     .digest('hex');
-  
+
   this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
-  
+
   return verificationToken;
+};
+
+// Constants for account lockout
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCK_TIME = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+
+// Virtual property to check if account is locked
+userSchema.virtual('isLocked').get(function(this: IUser) {
+  // Check if lockUntil exists and is in the future
+  return !!(this.lockUntil && this.lockUntil.getTime() > Date.now());
+});
+
+// Instance method to increment login attempts
+userSchema.methods.incLoginAttempts = function(this: IUser) {
+  // If lock has expired, restart count at 1
+  if (this.lockUntil && this.lockUntil.getTime() < Date.now()) {
+    return this.updateOne({
+      $set: { loginAttempts: 1 },
+      $unset: { lockUntil: 1 }
+    });
+  }
+
+  // Otherwise, increment attempts
+  const updates: any = { $inc: { loginAttempts: 1 } };
+
+  // Lock account if max attempts reached and not already locked
+  const attemptsCount = (this.loginAttempts || 0) + 1;
+  if (attemptsCount >= MAX_LOGIN_ATTEMPTS && !this.isLocked) {
+    updates.$set = { lockUntil: Date.now() + LOCK_TIME };
+  }
+
+  return this.updateOne(updates);
+};
+
+// Instance method to reset login attempts
+userSchema.methods.resetLoginAttempts = function(this: IUser) {
+  return this.updateOne({
+    $set: { loginAttempts: 0 },
+    $unset: { lockUntil: 1 }
+  });
 };
 
 export default mongoose.model<IUser>('User', userSchema);
