@@ -1,0 +1,202 @@
+# ============================================================================
+# VARDHMAN MILLS - DOCKER COMPOSE CONFIGURATION
+# Full-stack deployment: MongoDB + Backend + Frontend + Admin
+# ============================================================================
+
+version: '3.9'
+
+# ----------------------------------------------------------------------------
+# SERVICES
+# ----------------------------------------------------------------------------
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: vardhman-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-changeme}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-vardhman-mills}
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - vardhman-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vardhman-backend
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=${BACKEND_PORT:-5000}
+      - MONGODB_URI=mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-changeme}@mongodb:27017/${MONGO_DATABASE:-vardhman-mills}?authSource=admin
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-90d}
+      - JWT_COOKIE_EXPIRES_IN=${JWT_COOKIE_EXPIRES_IN:-90}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      - ADMIN_URL=${ADMIN_URL:-http://localhost:3001}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      - RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID}
+      - RAZORPAY_KEY_SECRET=${RAZORPAY_KEY_SECRET}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+      - FIREBASE_DATABASE_URL=${FIREBASE_DATABASE_URL}
+      - EMAIL_SERVICE=${EMAIL_SERVICE}
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+      - EMAIL_FROM=${EMAIL_FROM}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - FACEBOOK_APP_ID=${FACEBOOK_APP_ID}
+      - FACEBOOK_APP_SECRET=${FACEBOOK_APP_SECRET}
+      - SENTRY_DSN=${SENTRY_DSN}
+    ports:
+      - "${BACKEND_PORT:-5000}:5000"
+    volumes:
+      - backend_uploads:/app/uploads
+    networks:
+      - vardhman-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Store
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: docker/Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:5000/api/v1}
+        - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+    container_name: vardhman-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:5000/api/v1}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      - NEXT_PUBLIC_RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID}
+      - NEXT_PUBLIC_GA_MEASUREMENT_ID=${GA_MEASUREMENT_ID}
+      - NEXT_PUBLIC_GTM_ID=${GTM_ID}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    networks:
+      - vardhman-network
+
+  # Admin Panel
+  admin:
+    build:
+      context: ./admin
+      dockerfile: docker/Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:5000/api/v1}
+        - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_ADMIN_URL:-http://localhost:3001}
+    container_name: vardhman-admin
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:5000/api/v1}
+      - NEXT_PUBLIC_ADMIN_API_URL=${NEXT_PUBLIC_ADMIN_API_URL:-http://localhost:5000/api/admin}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_ADMIN_URL:-http://localhost:3001}
+    ports:
+      - "${ADMIN_PORT:-3001}:3001"
+    networks:
+      - vardhman-network
+
+# ----------------------------------------------------------------------------
+# VOLUMES
+# ----------------------------------------------------------------------------
+volumes:
+  mongodb_data:
+    driver: local
+    name: vardhman_mongodb_data
+  mongodb_config:
+    driver: local
+    name: vardhman_mongodb_config
+  backend_uploads:
+    driver: local
+    name: vardhman_backend_uploads
+
+# ----------------------------------------------------------------------------
+# NETWORKS
+# ----------------------------------------------------------------------------
+networks:
+  vardhman-network:
+    driver: bridge
+    name: vardhman_network
+
+# ============================================================================
+# USAGE INSTRUCTIONS
+# ============================================================================
+#
+# Prerequisites:
+#   1. Create .env file in project root with all required variables
+#   2. Copy from .env.example files in each directory
+#
+# Commands:
+#   Start all services:
+#     docker-compose up -d
+#
+#   View logs:
+#     docker-compose logs -f
+#     docker-compose logs -f backend  # Specific service
+#
+#   Stop all services:
+#     docker-compose down
+#
+#   Stop and remove volumes (CAUTION: Deletes all data):
+#     docker-compose down -v
+#
+#   Rebuild after code changes:
+#     docker-compose build
+#     docker-compose up -d --build
+#
+#   Access MongoDB shell:
+#     docker-compose exec mongodb mongosh -u admin -p changeme
+#
+#   View service status:
+#     docker-compose ps
+#
+#   Scale services (example):
+#     docker-compose up -d --scale backend=3
+#
+# Production Deployment:
+#   1. Set NODE_ENV=production in .env
+#   2. Use strong passwords for MongoDB
+#   3. Set proper JWT_SECRET
+#   4. Configure SSL/TLS (use reverse proxy like Nginx)
+#   5. Set up proper backup strategy for MongoDB volume
+#   6. Monitor logs and health checks
+#
+# ============================================================================
