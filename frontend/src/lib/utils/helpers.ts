@@ -12,9 +12,16 @@ export const getProductPrice = (product: Product): { min: number; max: number } 
     };
   }
 
-  const prices = activeVariants.map(v =>
-    v.pricing?.basePrice.amount ?? product.pricing?.basePrice.amount ?? product.price ?? 0
-  );
+  const prices = activeVariants.map(v => {
+    // Handle both ProductVariant (with pricing) and BackendProductVariant (with price)
+    if ('pricing' in v && v.pricing?.basePrice.amount) {
+      return v.pricing.basePrice.amount;
+    }
+    if ('price' in v && typeof v.price === 'number') {
+      return v.price;
+    }
+    return product.pricing?.basePrice.amount ?? product.price ?? 0;
+  });
   return {
     min: Math.min(...prices),
     max: Math.max(...prices),
@@ -123,7 +130,10 @@ export const getProductVariantByOptions = (product: Product, options: Record<str
 };
 
 export const getVariantStock = (product: Product, variantId: string): number => {
-  const variant = product.variants.find(v => v.id === variantId);
+  const variant = product.variants.find(v => {
+    // Handle both ProductVariant (with id) and BackendProductVariant (with sku or other identifier)
+    return ('id' in v && v.id === variantId) || ((v as any).sku === variantId);
+  });
   if (!variant) return 0;
   return ('inventory' in variant ? variant.inventory.quantity : (variant as any).stock) || 0;
 };
@@ -137,7 +147,7 @@ export const canAddToCart = (product: Product, quantity: number, variantId?: str
 };
 
 export const getProductRating = (product: Product): number => {
-  return product.rating.average || 0;
+  return product.rating?.average || 0;
 };
 
 export const getProductReviewCount = (product: Product): number => {
@@ -149,7 +159,7 @@ export const isProductOnSale = (product: Product): boolean => {
 };
 
 export const getProductSalePrice = (product: Product): number | null => {
-  return product.pricing.salePrice?.amount || null;
+  return product.pricing?.salePrice?.amount || null;
 };
 
 export const isProductNew = (product: Product): boolean => {
@@ -285,7 +295,7 @@ export const generateProductSEOData = (product: Product) => {
     openGraph: {
       title: product.name,
       description: product.description,
-      images: product.media.images?.map(img => ({
+      images: product.media?.images?.map(img => ({
         url: img.url,
         width: 800,
         height: 600,
@@ -338,10 +348,20 @@ export const validateProductData = (product: Partial<Product>): { isValid: boole
     errors.push('At least one product variant is required');
   } else {
     product.variants.forEach((variant, index) => {
-      if (!variant.pricing?.basePrice.amount || variant.pricing.basePrice.amount <= 0) {
+      // Handle both ProductVariant and BackendProductVariant
+      const price = ('pricing' in variant && variant.pricing?.basePrice.amount)
+        ? variant.pricing.basePrice.amount
+        : ('price' in variant ? variant.price : 0);
+
+      if (!price || price <= 0) {
         errors.push(`Variant ${index + 1}: Price must be greater than 0`);
       }
-      if (variant.inventory.quantity < 0) {
+
+      const quantity = ('inventory' in variant && variant.inventory?.quantity)
+        ? variant.inventory.quantity
+        : ((variant as any).stock || 0);
+
+      if (quantity < 0) {
         errors.push(`Variant ${index + 1}: Stock cannot be negative`);
       }
     });
