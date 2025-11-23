@@ -66,6 +66,7 @@ import type { FilterState, GridLayout, ProductSortOption } from '@/components/pr
 // Utils
 import { cn, formatCurrency } from '@/lib/utils';
 import { getProductPricing, getProductInventory } from '@/utils/productHelpers';
+import { adaptAPIProducts, ensureComponentProduct } from '@/utils/productAdapter';
 // API_ENDPOINTS available from constants if needed for future API integration
 
 // Icons
@@ -209,10 +210,12 @@ function ProductsPageContent({ initialProducts = [], initialTotal = 0 }: Product
     sortBy: sortBy as string,
   } as any);
 
-  // Flatten all pages into a single products array
+  // Flatten all pages into a single products array and adapt to Component Product format
   const products = useMemo(() => {
     if (!data?.pages) return [];
-    return data.pages.flatMap(page => page.data || []);
+    const apiProducts = data.pages.flatMap(page => page.data || []);
+    // Convert API Products to Component Products for type compatibility
+    return adaptAPIProducts(apiProducts);
   }, [data]);
 
   // Get total count
