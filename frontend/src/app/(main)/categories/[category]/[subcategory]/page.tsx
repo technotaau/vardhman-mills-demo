@@ -53,6 +53,11 @@ import { ProductCard } from '@/components/products';
 import type { Category, Product } from '@/types/product.types';
 import { formatNumber } from '@/lib/format';
 import { cn } from '@/lib/utils/utils';
+import {
+  getProductPricing,
+  getProductSpecifications,
+  getBrandName,
+} from '@/utils/productHelpers';
 
 // ============================================================================
 // TYPES
@@ -215,7 +220,7 @@ export default function SubcategoryDetailPage() {
 
     // Brand filter
     if (filters.brands.length > 0) {
-      result = result.filter(p => p.brand && filters.brands.includes(p.brand.name));
+      result = result.filter(p => p.brand && filters.brands.includes(getBrandName(p.brand)));
     }
 
     // Color filter
@@ -238,16 +243,18 @@ export default function SubcategoryDetailPage() {
 
     // Price filter
     result = result.filter(p => {
-      const price = typeof p.pricing.basePrice === 'number' 
-        ? p.pricing.basePrice 
-        : p.pricing.basePrice.amount;
+      const pricing = getProductPricing(p);
+      const price = typeof pricing?.basePrice === 'number'
+        ? pricing.basePrice
+        : pricing?.basePrice?.amount || 0;
       return price >= filters.priceRange[0] && price <= filters.priceRange[1];
     });
 
     // Material filter
     if (filters.materials.length > 0) {
       result = result.filter(p => {
-        const materialSpec = p.specifications?.find(spec => spec.name.toLowerCase() === 'material');
+        const specs = getProductSpecifications(p);
+        const materialSpec = specs.find(spec => spec.name.toLowerCase() === 'material');
         return materialSpec && filters.materials.some(m =>
           materialSpec.value.toLowerCase().includes(m.toLowerCase())
         );
@@ -266,12 +273,14 @@ export default function SubcategoryDetailPage() {
 
     // Sort
     result.sort((a, b) => {
-      const priceA = typeof a.pricing.basePrice === 'number'
-        ? a.pricing.basePrice
-        : a.pricing.basePrice.amount;
-      const priceB = typeof b.pricing.basePrice === 'number'
-        ? b.pricing.basePrice
-        : b.pricing.basePrice.amount;
+      const pricingA = getProductPricing(a);
+      const pricingB = getProductPricing(b);
+      const priceA = typeof pricingA?.basePrice === 'number'
+        ? pricingA.basePrice
+        : pricingA?.basePrice?.amount || 0;
+      const priceB = typeof pricingB?.basePrice === 'number'
+        ? pricingB.basePrice
+        : pricingB?.basePrice?.amount || 0;
 
       switch (sortBy) {
         case 'name-asc':

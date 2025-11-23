@@ -54,6 +54,7 @@ import { ProductGrid, ProductCard } from '@/components/products';
 import type { Category, Product } from '@/types/product.types';
 import { formatNumber } from '@/lib/format';
 import { cn } from '@/lib/utils/utils';
+import { getProductPricing } from '@/utils/productHelpers';
 
 // ============================================================================
 // TYPES
@@ -170,10 +171,11 @@ export default function CategoryDetailPage() {
     let result = [...products];
 
     // Price filter
-    result = result.filter(p =>
-      p.pricing.basePrice.amount >= productFilter.priceRange[0] &&
-      p.pricing.basePrice.amount <= productFilter.priceRange[1]
-    );
+    result = result.filter(p => {
+      const pricing = getProductPricing(p);
+      const price = pricing?.basePrice?.amount || 0;
+      return price >= productFilter.priceRange[0] && price <= productFilter.priceRange[1];
+    });
 
     // Rating filter
     if (productFilter.minRating > 0) {
@@ -188,9 +190,9 @@ export default function CategoryDetailPage() {
         case 'newest':
           return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
         case 'price-low':
-          return a.pricing.basePrice.amount - b.pricing.basePrice.amount;
+          return (getProductPricing(a)?.basePrice?.amount || 0) - (getProductPricing(b)?.basePrice?.amount || 0);
         case 'price-high':
-          return b.pricing.basePrice.amount - a.pricing.basePrice.amount;
+          return (getProductPricing(b)?.basePrice?.amount || 0) - (getProductPricing(a)?.basePrice?.amount || 0);
         case 'name':
           return a.name.localeCompare(b.name);
         default:
