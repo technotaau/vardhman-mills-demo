@@ -1,17 +1,19 @@
 import { Product, ProductVariant } from '@/types';
 
 export const getProductPrice = (product: Product): { min: number; max: number } => {
-  const activeVariants = product.variants.filter(v => v.status === 'active');
-  
+  const activeVariants = product.variants.filter(v =>
+    ('status' in v ? v.status === 'active' : true)
+  );
+
   if (activeVariants.length === 0) {
-    return { 
-      min: product.pricing.basePrice.amount, 
-      max: product.pricing.basePrice.amount 
+    return {
+      min: product.pricing?.basePrice.amount ?? product.price ?? 0,
+      max: product.pricing?.basePrice.amount ?? product.price ?? 0
     };
   }
 
-  const prices = activeVariants.map(v => 
-    v.pricing?.basePrice.amount || product.pricing.basePrice.amount
+  const prices = activeVariants.map(v =>
+    v.pricing?.basePrice.amount ?? product.pricing?.basePrice.amount ?? product.price ?? 0
   );
   return {
     min: Math.min(...prices),
@@ -31,19 +33,25 @@ export const getProductDiscountPercentage = (variant: ProductVariant): number =>
 };
 
 export const isProductInStock = (product: Product): boolean => {
-  return product.variants.some(v => v.status === 'active' && v.inventory.quantity > 0);
+  return product.variants.some(v =>
+    ('status' in v ? v.status === 'active' : true) &&
+    ('inventory' in v ? v.inventory.quantity > 0 : (v as any).stock > 0)
+  );
 };
 
 export const getTotalStock = (product: Product): number => {
   return product.variants
-    .filter(v => v.status === 'active')
-    .reduce((total, v) => total + v.inventory.quantity, 0);
+    .filter(v => ('status' in v ? v.status === 'active' : true))
+    .reduce((total, v) => {
+      const qty = 'inventory' in v ? v.inventory.quantity : (v as any).stock ?? 0;
+      return total + qty;
+    }, 0);
 };
 
 export const getAvailableSizes = (product: Product): string[] => {
-  const sizeOptions = product.variantOptions.find(option => option.type === 'size');
+  const sizeOptions = product.variantOptions?.find(option => option.type === 'size');
   if (!sizeOptions) return [];
-  
+
   return sizeOptions.values
     .filter(value => value.isAvailable)
     .map(value => value.displayValue)
@@ -51,9 +59,9 @@ export const getAvailableSizes = (product: Product): string[] => {
 };
 
 export const getAvailableColors = (product: Product): string[] => {
-  const colorOptions = product.variantOptions.find(option => option.type === 'color');
+  const colorOptions = product.variantOptions?.find(option => option.type === 'color');
   if (!colorOptions) return [];
-  
+
   return colorOptions.values
     .filter(value => value.isAvailable)
     .map(value => value.displayValue)
@@ -94,26 +102,30 @@ export const getProductImageUrl = (product: Product, variant?: ProductVariant): 
   if (variant?.media?.images && variant.media.images.length > 0) {
     return variant.media.images[0].url;
   }
-  
-  if (product.media.images && product.media.images.length > 0) {
+
+  if (product.media?.images && product.media.images.length > 0) {
     return product.media.images[0].url;
   }
-  
-  return '/images/placeholder-product.jpg';
+
+  // Fallback to simple image property or placeholder
+  return product.image || '/images/placeholder-product.jpg';
 };
 
 // Additional Product Helper Functions
 export const getProductVariantByOptions = (product: Product, options: Record<string, string>): ProductVariant | undefined => {
-  return product.variants.find(variant => 
-    variant.options.every(option => 
+  return product.variants.find(variant => {
+    // Type guard for ProductVariant vs BackendProductVariant
+    if (!('options' in variant)) return false;
+    return variant.options.every(option =>
       options[option.optionId] === option.value
-    ) && variant.status === 'active'
-  );
+    ) && ('status' in variant ? variant.status === 'active' : true);
+  }) as ProductVariant | undefined;
 };
 
 export const getVariantStock = (product: Product, variantId: string): number => {
   const variant = product.variants.find(v => v.id === variantId);
-  return variant?.inventory.quantity || 0;
+  if (!variant) return 0;
+  return ('inventory' in variant ? variant.inventory.quantity : (variant as any).stock) || 0;
 };
 
 export const canAddToCart = (product: Product, quantity: number, variantId?: string): boolean => {
