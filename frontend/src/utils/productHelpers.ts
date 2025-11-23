@@ -292,8 +292,16 @@ export function normalizeVariant(
     size: variant.size,
     material: variant.material,
     pricing: {
-      basePrice: { amount: variant.price, currency: 'INR' },
-      compareAtPrice: variant.comparePrice ? { amount: variant.comparePrice, currency: 'INR' } : undefined,
+      basePrice: {
+        amount: variant.price,
+        currency: 'INR',
+        formatted: `₹${variant.price.toLocaleString('en-IN')}`,
+      },
+      compareAtPrice: variant.comparePrice ? {
+        amount: variant.comparePrice,
+        currency: 'INR',
+        formatted: `₹${variant.comparePrice.toLocaleString('en-IN')}`,
+      } : undefined,
       isDynamicPricing: false,
       taxable: true,
     },
