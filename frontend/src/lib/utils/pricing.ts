@@ -24,7 +24,8 @@ export function getProductPricing(product: Product, variant?: ProductVariant | B
 
   // Check if we have frontend pricing structure
   if (product.pricing?.basePrice) {
-    const pricing = variant?.pricing || product.pricing;
+    // Use variant pricing if it's a ProductVariant with pricing property
+    const pricing = (variant && 'pricing' in variant && variant.pricing) ? variant.pricing : product.pricing;
     currentPrice = pricing.salePrice?.amount || pricing.basePrice.amount;
     originalPrice = pricing.compareAtPrice?.amount || (pricing.salePrice ? pricing.basePrice.amount : null);
   }
@@ -53,7 +54,7 @@ export function getProductPricing(product: Product, variant?: ProductVariant | B
   }
 
   const hasDiscount = !!originalPrice && originalPrice > currentPrice;
-  const discountAmount = hasDiscount ? originalPrice - currentPrice : 0;
+  const discountAmount = hasDiscount && originalPrice !== null ? originalPrice - currentPrice : 0;
   const discountPercentage = hasDiscount && originalPrice ? Math.round((discountAmount / originalPrice) * 100) : 0;
 
   return {
