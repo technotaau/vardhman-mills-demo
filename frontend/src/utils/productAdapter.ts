@@ -35,7 +35,6 @@ export function adaptAPIProduct(apiProduct: APIProduct): Product {
       currency: 'INR',
       formatted: `₹${apiProduct.originalPrice.toLocaleString('en-IN')}`,
     } as Price : undefined,
-    discount: apiProduct.discount,
     isDynamicPricing: false,
     taxable: true,
   };
@@ -62,12 +61,14 @@ export function adaptAPIProduct(apiProduct: APIProduct): Product {
       order: img.order ?? index,
     })) || [],
     videos: [],
-    thumbnail: apiProduct.images?.[0] ? {
-      id: `${productId}-thumb`,
+    primaryImage: apiProduct.images?.[0] ? {
+      id: `${productId}-primary`,
       url: apiProduct.images[0].url,
       alt: apiProduct.images[0].alt || apiProduct.name,
-      width: 200,
-      height: 200,
+      width: 800,
+      height: 800,
+      isPrimary: true,
+      order: 0,
     } : undefined,
   };
 
@@ -101,7 +102,7 @@ export function adaptAPIProduct(apiProduct: APIProduct): Product {
     categoryId: typeof apiProduct.category === 'string' ? apiProduct.category : apiProduct.category?.id || '',
     category: apiProduct.category as any, // API category may be partial
     brandId: typeof apiProduct.brand === 'string' ? apiProduct.brand : apiProduct.brand?.id,
-    brand: apiProduct.brand,
+    brand: apiProduct.brand as any, // API brand may be partial
     collectionIds: [],
     collections: [],
 
