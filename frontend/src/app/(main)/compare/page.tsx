@@ -146,9 +146,9 @@ export default function ComparePage() {
       isHighlighted: false,
       isFavorite,
       comparisonContext: {
-        priceAtComparison: getProductPricing(product)?.basePrice || { amount: 0, currency: 'INR' },
+        priceAtComparison: getProductPricing(product)?.basePrice || { amount: 0, currency: 'INR', formatted: '₹0' },
         availabilityAtComparison: getProductInventory(product)?.isInStock ? 'In Stock' : 'Out of Stock',
-        ratingAtComparison: getProductRating(product) || { average: 0, count: 0 },
+        ratingAtComparison: getProductRating(product) || { average: 0, count: 0, distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } },
       },
     };
 

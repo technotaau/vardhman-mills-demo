@@ -563,13 +563,17 @@ function SearchPageContent() {
   }, [searchState.query, toast]);
 
   const handleExportResults = useCallback(() => {
-    const data = filteredResults.map(product => ({
-      name: product.name,
-      sku: product.sku,
-      price: product.pricing.salePrice?.formatted || product.pricing.basePrice.formatted,
-      category: typeof product.category === 'string' ? product.category : product.category.name,
-      stock: product.inventory.isInStock ? 'In Stock' : 'Out of Stock',
-    }));
+    const data = filteredResults.map(product => {
+      const pricing = getProductPricing(product);
+      const inventory = getProductInventory(product);
+      return {
+        name: product.name,
+        sku: product.sku || '',
+        price: pricing?.salePrice?.formatted || pricing?.basePrice?.formatted || '₹0',
+        category: typeof product.category === 'string' ? product.category : product.category?.name || '',
+        stock: inventory?.isInStock ? 'In Stock' : 'Out of Stock',
+      };
+    });
 
     const csv = [
       ['Name', 'SKU', 'Price', 'Category', 'Stock'],

@@ -104,6 +104,12 @@ import type { Product, Category, Pricing, StockInfo, Media, Rating } from '@/typ
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils/currency';
 import { formatNumber } from '@/lib/utils/formatters';
+import {
+  getProductPricing,
+  getProductInventory,
+  getProductRating,
+  getProductMedia,
+} from '@/utils/productHelpers';
 
 interface WishlistState {
   items: WishlistItem[];
@@ -305,8 +311,14 @@ export default function WishlistPage() {
   }, [wishlistItems]);
 
   // Helper functions to safely access product properties
-  const getPrice = (item: WishlistItem) => item.product.salePrice || item.product.price;
-  const getStockStatus = (item: WishlistItem) => item.product.inStock;
+  const getPrice = (item: WishlistItem) => {
+    const pricing = getProductPricing(item.product);
+    return pricing?.salePrice?.amount || pricing?.basePrice?.amount || 0;
+  };
+  const getStockStatus = (item: WishlistItem) => {
+    const inventory = getProductInventory(item.product);
+    return inventory?.isInStock ?? false;
+  };
   const getProductName = (item: WishlistItem) => item.product.name;
   const getProductId = (item: WishlistItem) => item.product.id;
 
@@ -373,7 +385,11 @@ export default function WishlistPage() {
 
     // Apply category filter
     if (wishlistState.filterBy.category) {
-      filtered = filtered.filter(item => item.product.category === wishlistState.filterBy.category);
+      filtered = filtered.filter(item => {
+        const category = item.product.category;
+        const categoryName = typeof category === 'string' ? category : category?.name || '';
+        return categoryName === wishlistState.filterBy.category;
+      });
     }
 
     // Apply sorting
@@ -480,7 +496,7 @@ export default function WishlistPage() {
       const item = wishlistState.items.find(i => i.id === itemId);
       if (!item) return;
 
-      if (!item.product.inventory.isInStock) {
+      if (!getStockStatus(item)) {
         toast({
           title: 'Out of stock',
           description: 'This item is currently unavailable',
@@ -800,7 +816,10 @@ export default function WishlistPage() {
               <div>
                 <p className="text-sm text-gray-600">On Sale</p>
                 <p className="text-xl font-bold text-gray-900">
-                  {wishlistState.items.filter(i => i.product.salePrice).length}
+                  {wishlistState.items.filter(i => {
+                    const pricing = getProductPricing(i.product);
+                    return !!pricing?.salePrice;
+                  }).length}
                 </p>
               </div>
             </div>
@@ -1147,28 +1166,40 @@ export default function WishlistPage() {
 
   const renderWishlistItems = () => {
     // Transform WishlistItemType to WishlistItem format for components
-    const transformedItems = filteredAndSortedItems.map(item => ({
-      id: item.id,
-      productId: item.product.id,
-      name: item.product.name,
-      price: getPrice(item),
-      originalPrice: item.product.price !== getPrice(item) ? item.product.price : undefined,
-      image: item.product.image || (item.product.gallery && item.product.gallery.length > 0 ? item.product.gallery[0] : ''),
-      category: typeof item.product.category === 'string' ? item.product.category : item.product.category?.name || '',
-      rating: item.product.rating?.average || 0,
-      reviewCount: item.product.reviewCount || item.product.rating?.count || 0,
-      inStock: item.product.inventory.isInStock,
-      addedAt: item.addedAt,
-      notes: '',
-      priority: item.notifyOnPriceDrop ? 'high' : 'medium' as 'low' | 'medium' | 'high',
-      tags: [],
-      discount: item.product.pricing.salePrice ? 
-        Math.round(((item.product.pricing.compareAtPrice?.amount || item.product.pricing.basePrice.amount) - 
-         item.product.pricing.salePrice.amount) / 
-         (item.product.pricing.compareAtPrice?.amount || item.product.pricing.basePrice.amount) * 100) : undefined,
-      brand: item.product.brand?.name,
-      sku: item.product.sku,
-    }));
+    const transformedItems = filteredAndSortedItems.map(item => {
+      const pricing = getProductPricing(item.product);
+      const inventory = getProductInventory(item.product);
+      const rating = getProductRating(item.product);
+      const media = getProductMedia(item.product);
+      const price = getPrice(item);
+
+      // Calculate discount if on sale
+      let discount: number | undefined;
+      if (pricing?.salePrice && pricing?.basePrice) {
+        const comparePrice = pricing.compareAtPrice?.amount || pricing.basePrice.amount;
+        discount = Math.round(((comparePrice - pricing.salePrice.amount) / comparePrice) * 100);
+      }
+
+      return {
+        id: item.id,
+        productId: item.product.id,
+        name: item.product.name,
+        price,
+        originalPrice: item.priceWhenAdded !== price ? item.priceWhenAdded : undefined,
+        image: media?.images?.[0]?.url || media?.thumbnail?.url || '',
+        category: typeof item.product.category === 'string' ? item.product.category : item.product.category?.name || '',
+        rating: rating?.average || 0,
+        reviewCount: item.product.reviewCount || rating?.count || 0,
+        inStock: inventory?.isInStock ?? false,
+        addedAt: item.addedAt,
+        notes: '',
+        priority: item.notifyOnPriceDrop ? 'high' : 'medium' as 'low' | 'medium' | 'high',
+        tags: [],
+        discount,
+        brand: typeof item.product.brand === 'string' ? item.product.brand : item.product.brand?.name,
+        sku: item.product.sku,
+      };
+    });
 
     if (wishlistState.view === 'grid') {
       return (
@@ -1287,22 +1318,29 @@ export default function WishlistPage() {
   const isEmpty = filteredAndSortedItems.length === 0;
 
   // Transform wishlist items for WishlistActions component - match its local WishlistItem interface
-  const transformedItems = filteredAndSortedItems.map((item) => ({
-    id: item.id,
-    productId: item.product.id,
-    name: item.product.name,
-    price: item.product.pricing?.salePrice?.amount || item.product.pricing?.basePrice?.amount || 0,
-    originalPrice: item.priceWhenAdded,
-    image: item.product.media?.images?.[0]?.url || '',
-    category: item.product.category?.name || '',
-    rating: item.product.rating?.average || 0,
-    reviewCount: item.product.reviewCount || 0,
-    inStock: item.product.inventory?.isInStock || false,
-    addedAt: item.addedAt,
-    notes: undefined,
-    priority: 'medium' as const,
-    tags: item.product.tags || [],
-  }));
+  const transformedItemsForActions = filteredAndSortedItems.map((item) => {
+    const pricing = getProductPricing(item.product);
+    const inventory = getProductInventory(item.product);
+    const rating = getProductRating(item.product);
+    const media = getProductMedia(item.product);
+
+    return {
+      id: item.id,
+      productId: item.product.id,
+      name: item.product.name,
+      price: pricing?.salePrice?.amount || pricing?.basePrice?.amount || 0,
+      originalPrice: item.priceWhenAdded,
+      image: media?.images?.[0]?.url || '',
+      category: typeof item.product.category === 'string' ? item.product.category : item.product.category?.name || '',
+      rating: rating?.average || 0,
+      reviewCount: item.product.reviewCount || rating?.count || 0,
+      inStock: inventory?.isInStock ?? false,
+      addedAt: item.addedAt,
+      notes: undefined,
+      priority: 'medium' as const,
+      tags: item.product.tags || [],
+    };
+  });
 
   return (
     <>
@@ -1455,7 +1493,7 @@ export default function WishlistPage() {
                       {/* Hidden WishlistActions component for future use */}
                       <div className="hidden">
                         <WishlistActions
-                          items={transformedItems}
+                          items={transformedItemsForActions}
                           selectedItems={Array.from(wishlistState.selectedItems)}
                           onSelectionChange={(ids: string[]) => {
                             setWishlistState(prev => ({
@@ -1624,27 +1662,34 @@ export default function WishlistPage() {
         />
       )}
 
-      {showQuickView && (
-        <QuickView
-          product={{
-            id: showQuickView.id,
-            name: showQuickView.name,
-            slug: showQuickView.slug,
-            description: showQuickView.description || showQuickView.shortDescription || '',
-            images: showQuickView.media?.images?.map((img: { url?: string } | string) => 
-              typeof img === 'string' ? img : img.url || '') || [],
-            price: showQuickView.pricing.salePrice?.amount || showQuickView.pricing.basePrice.amount,
-            originalPrice: showQuickView.pricing.compareAtPrice?.amount,
-            rating: showQuickView.rating?.average || 0,
-            reviewCount: showQuickView.reviewCount || 0,
-            inStock: showQuickView.inventory?.isInStock || false,
-            stockLevel: showQuickView.inventory?.quantity,
-            sku: showQuickView.sku,
-          }}
-          isOpen={!!showQuickView}
-          onClose={() => setShowQuickView(null)}
-        />
-      )}
+      {showQuickView && (() => {
+        const pricing = getProductPricing(showQuickView);
+        const inventory = getProductInventory(showQuickView);
+        const rating = getProductRating(showQuickView);
+        const media = getProductMedia(showQuickView);
+
+        return (
+          <QuickView
+            product={{
+              id: showQuickView.id,
+              name: showQuickView.name,
+              slug: showQuickView.slug,
+              description: showQuickView.description || showQuickView.shortDescription || '',
+              images: media?.images?.map((img: { url?: string } | string) =>
+                typeof img === 'string' ? img : img.url || '') || [],
+              price: pricing?.salePrice?.amount || pricing?.basePrice?.amount || 0,
+              originalPrice: pricing?.compareAtPrice?.amount,
+              rating: rating?.average || 0,
+              reviewCount: showQuickView.reviewCount || rating?.count || 0,
+              inStock: inventory?.isInStock ?? false,
+              stockLevel: inventory?.quantity,
+              sku: showQuickView.sku,
+            }}
+            isOpen={!!showQuickView}
+            onClose={() => setShowQuickView(null)}
+          />
+        );
+      })()}
     </>
   );
 }

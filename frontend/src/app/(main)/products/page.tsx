@@ -205,9 +205,9 @@ function ProductsPageContent({ initialProducts = [], initialTotal = 0 }: Product
     error,
   } = useInfiniteProducts({
     limit: PRODUCTS_PER_PAGE,
-    search: debouncedSearch || undefined,
+    ...(debouncedSearch && { q: debouncedSearch }),
     sortBy: sortBy as string,
-  });
+  } as any);
 
   // Flatten all pages into a single products array
   const products = useMemo(() => {
@@ -287,7 +287,7 @@ function ProductsPageContent({ initialProducts = [], initialTotal = 0 }: Product
     // Color filter
     if (filters.colors.length > 0) {
       filtered = filtered.filter(p => {
-        const productWithAttrs = p as ProductWithAttributes;
+        const productWithAttrs = p as unknown as ProductWithAttributes;
         const color = productWithAttrs.attributes?.color || productWithAttrs.color || '';
         return filters.colors.includes(color);
       });
@@ -296,7 +296,7 @@ function ProductsPageContent({ initialProducts = [], initialTotal = 0 }: Product
     // Size filter
     if (filters.sizes.length > 0) {
       filtered = filtered.filter(p => {
-        const productWithAttrs = p as ProductWithAttributes;
+        const productWithAttrs = p as unknown as ProductWithAttributes;
         const size = productWithAttrs.attributes?.size || productWithAttrs.size || '';
         return filters.sizes.includes(size);
       });
@@ -305,7 +305,7 @@ function ProductsPageContent({ initialProducts = [], initialTotal = 0 }: Product
     // Material filter
     if (filters.materials.length > 0) {
       filtered = filtered.filter(p => {
-        const productWithAttrs = p as ProductWithAttributes;
+        const productWithAttrs = p as unknown as ProductWithAttributes;
         const material = productWithAttrs.attributes?.material || productWithAttrs.material || '';
         return filters.materials.includes(material);
       });
@@ -314,7 +314,7 @@ function ProductsPageContent({ initialProducts = [], initialTotal = 0 }: Product
     // Brand filter
     if (filters.brandIds.length > 0) {
       filtered = filtered.filter(p => {
-        const productWithAttrs = p as ProductWithAttributes;
+        const productWithAttrs = p as unknown as ProductWithAttributes;
         const brand = productWithAttrs.attributes?.brand || productWithAttrs.brand || '';
         const brandId = typeof brand === 'string' ? brand : brand?.id || '';
         return filters.brandIds.includes(brandId);
@@ -340,7 +340,7 @@ function ProductsPageContent({ initialProducts = [], initialTotal = 0 }: Product
     if (filters.threadCount.min > 0 || filters.threadCount.max < 1000) {
       filtered = filtered.filter(
         p => {
-          const productWithAttrs = p as ProductWithAttributes;
+          const productWithAttrs = p as unknown as ProductWithAttributes;
           const threadCount = productWithAttrs.attributes?.threadCount || 0;
           return threadCount >= filters.threadCount.min && threadCount <= filters.threadCount.max;
         }
