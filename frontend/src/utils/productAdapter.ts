@@ -67,8 +67,6 @@ export function adaptAPIProduct(apiProduct: APIProduct): Product {
       alt: apiProduct.images[0].alt || apiProduct.name,
       width: 800,
       height: 800,
-      isPrimary: true,
-      order: 0,
     } : undefined,
   };
 
@@ -166,13 +164,14 @@ export function adaptAPIProduct(apiProduct: APIProduct): Product {
     })) || [],
 
     // Attributes (convert to component format)
-    specifications: apiProduct.attributes?.map(attr => ({
-      group: attr.group || 'General',
-      key: attr.name,
+    specifications: apiProduct.attributes?.map((attr, index) => ({
+      id: `${productId}-spec-${index}`,
+      name: attr.name,
       value: attr.value,
-      displayName: attr.name,
       unit: undefined,
-      sortOrder: 0,
+      group: attr.group || 'General',
+      isHighlight: false,
+      sortOrder: index,
     })),
 
     // Tags
