@@ -115,7 +115,7 @@ export const useEmailVerification = () => {
 
       // Update auth state if user is logged in
       if (auth.user && data.user) {
-        auth.refetchUser();
+        auth.refreshUser();
       }
 
       toast.success(data.message || 'Email verified successfully');
@@ -246,7 +246,7 @@ export const useEmailVerification = () => {
 
   // Check if user needs verification
   const needsVerification = useCallback(() => {
-    return auth.user && !auth.user.isEmailVerified;
+    return auth.user && !auth.user.emailVerified;
   }, [auth.user]);
 
   // Get time until next resend allowed
