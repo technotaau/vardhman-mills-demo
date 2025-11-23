@@ -48,7 +48,6 @@ export function adaptAPIProduct(apiProduct: APIProduct): Product {
     lowStockThreshold: 10,
     isLowStock: apiProduct.stock > 0 && apiProduct.stock <= 10,
     backorderAllowed: false,
-    sku: apiProduct.sku,
   };
 
   // Create comprehensive media object from simple images
@@ -100,7 +99,7 @@ export function adaptAPIProduct(apiProduct: APIProduct): Product {
 
     // Categorization (required fields)
     categoryId: typeof apiProduct.category === 'string' ? apiProduct.category : apiProduct.category?.id || '',
-    category: apiProduct.category,
+    category: apiProduct.category as any, // API category may be partial
     brandId: typeof apiProduct.brand === 'string' ? apiProduct.brand : apiProduct.brand?.id,
     brand: apiProduct.brand,
     collectionIds: [],
@@ -146,7 +145,6 @@ export function adaptAPIProduct(apiProduct: APIProduct): Product {
         lowStockThreshold: 10,
         isLowStock: v.stock > 0 && v.stock <= 10,
         backorderAllowed: false,
-        sku: v.sku,
       } as StockInfo,
       media: {
         images: v.images?.map((imgUrl, idx) => ({

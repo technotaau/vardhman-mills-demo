@@ -1,3 +1,4 @@
+import type { Product, ProductFilters as ProductFilter, Category, Brand } from './product.types';
 
 export interface SearchQuery {
   q: string;

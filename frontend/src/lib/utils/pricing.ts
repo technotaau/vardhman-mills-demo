@@ -116,7 +116,7 @@ export function getStockStatus(product: Product, variant?: ProductVariant | Back
   if (variant) {
     if ('stock' in variant && typeof variant.stock === 'number') {
       quantity = variant.stock;
-    } else if (variant.inventory?.quantity) {
+    } else if ('inventory' in variant && variant.inventory?.quantity) {
       quantity = variant.inventory.quantity;
     }
   }
