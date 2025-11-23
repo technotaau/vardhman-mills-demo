@@ -6,7 +6,7 @@ import { EmailTemplateContext } from '../email-utils';
 
 export interface ShippingUpdateContext extends Partial<EmailTemplateContext> {
   user: { name: string; email: string; firstName?: string; };
-  order: { id: string; number: string; };
+  order: { id: string; number: string; currency: string; };
   shipping: { status: string; trackingNumber?: string; estimatedDelivery?: string; carrier?: string; location?: string; };
 }
 
