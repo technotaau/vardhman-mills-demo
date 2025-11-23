@@ -40,6 +40,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { cn } from '@/lib/utils/utils';
 import type { Product } from '@/types/product.types';
+import { getProductPricing, getProductInventory, getProductRating } from '@/utils/productHelpers';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -179,35 +180,58 @@ export const NewArrivalsProducts: React.FC<NewArrivalsProductsProps> = ({
     }
 
     // Price filter
-    filtered = filtered.filter(
-      (p) => p.pricing.basePrice.amount >= selectedPriceRange.min && p.pricing.basePrice.amount <= selectedPriceRange.max
-    );
+    filtered = filtered.filter((p) => {
+      const pricing = getProductPricing(p);
+      const price = pricing?.basePrice?.amount ?? p.price ?? 0;
+      return price >= selectedPriceRange.min && price <= selectedPriceRange.max;
+    });
 
     // Rating filter
     if (minRating > 0) {
-      filtered = filtered.filter((p) => (p.rating.average || 0) >= minRating);
+      filtered = filtered.filter((p) => {
+        const rating = getProductRating(p);
+        return (rating?.average || p.averageRating || 0) >= minRating;
+      });
     }
 
     // Stock filter
     if (showOnlyInStock) {
-      filtered = filtered.filter((p) => (p.inventory.quantity || 0) > 0);
+      filtered = filtered.filter((p) => {
+        const inventory = getProductInventory(p);
+        return (inventory?.quantity || p.stock || 0) > 0;
+      });
     }
 
     // Sale filter
     if (showOnlySale) {
-      filtered = filtered.filter((p) => p.isOnSale || p.pricing.salePrice !== undefined);
+      filtered = filtered.filter((p) => {
+        const pricing = getProductPricing(p);
+        return p.isOnSale || pricing?.salePrice !== undefined;
+      });
     }
 
     // Sorting
     switch (sortBy) {
       case 'price-asc':
-        filtered.sort((a, b) => a.pricing.basePrice.amount - b.pricing.basePrice.amount);
+        filtered.sort((a, b) => {
+          const aPricing = getProductPricing(a);
+          const bPricing = getProductPricing(b);
+          return (aPricing?.basePrice?.amount ?? a.price ?? 0) - (bPricing?.basePrice?.amount ?? b.price ?? 0);
+        });
         break;
       case 'price-desc':
-        filtered.sort((a, b) => b.pricing.basePrice.amount - a.pricing.basePrice.amount);
+        filtered.sort((a, b) => {
+          const aPricing = getProductPricing(a);
+          const bPricing = getProductPricing(b);
+          return (bPricing?.basePrice?.amount ?? b.price ?? 0) - (aPricing?.basePrice?.amount ?? a.price ?? 0);
+        });
         break;
       case 'rating':
-        filtered.sort((a, b) => (b.rating.average || 0) - (a.rating.average || 0));
+        filtered.sort((a, b) => {
+          const aRating = getProductRating(a);
+          const bRating = getProductRating(b);
+          return (bRating?.average || b.averageRating || 0) - (aRating?.average || a.averageRating || 0);
+        });
         break;
       case 'name':
         filtered.sort((a, b) => a.name.localeCompare(b.name));
