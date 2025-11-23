@@ -11,6 +11,11 @@ const toDate = (timestamp: string | number | Date): Date => {
   if (typeof timestamp === 'number') return new Date(timestamp);
   return new Date();
 };
+
+// Helper to check if notification is read (based on readAt property)
+const isNotificationRead = (notification: any): boolean => {
+  return notification.readAt !== undefined && notification.readAt !== null;
+};
 import {
   BellIcon,
   ChevronDownIcon,
@@ -323,8 +328,8 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
   const menuItems = [
     { 
       key: 'mark_read', 
-      label: notification.isRead ? new Date() : undefined ? 'Mark as Unread' : 'Mark as Read',
-      icon: notification.isRead ? new Date() : undefined ? EyeSlashIcon : EyeIcon
+      label: isNotificationRead(notification) ? 'Mark as Unread' : 'Mark as Read',
+      icon: isNotificationRead(notification) ? EyeSlashIcon : EyeIcon
     },
     { 
       key: 'bookmark', 
@@ -346,7 +351,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
       className={clsx(
         'relative flex items-start space-x-3 p-3 border-b border-gray-100',
         'hover:bg-gray-50 transition-colors cursor-pointer',
-        !notification.isRead && 'bg-blue-50/30',
+        !isNotificationRead(notification) && 'bg-blue-50/30',
         selected && 'bg-blue-100',
         compact && 'p-2 space-x-2'
       )}
@@ -381,8 +386,8 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
       <div className="flex-shrink-0 pt-1">
         <div className={clsx(
           'w-2 h-2 rounded-full',
-          !notification.isRead && priorityConfig.bgColor,
-          notification.isRead ? new Date() : undefined && 'bg-gray-200'
+          !isNotificationRead(notification) && priorityConfig.bgColor,
+          isNotificationRead(notification) && 'bg-gray-200'
         )} />
       </div>
 
@@ -411,7 +416,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
             {/* Title */}
             <h4 className={clsx(
               'font-medium text-gray-900 truncate',
-              !notification.isRead && 'font-semibold',
+              !isNotificationRead(notification) && 'font-semibold',
               compact ? 'text-sm' : 'text-base'
             )}>
               {notification.title}
@@ -492,17 +497,17 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
             {/* Quick Actions - only show if showActions is enabled */}
             {showActions && (
               <>
-                <Tooltip content={notification.isRead ? new Date() : undefined ? 'Mark as Unread' : 'Mark as Read'}>
+                <Tooltip content={isNotificationRead(notification) ? 'Mark as Unread' : 'Mark as Read'}>
                   <Button
                     variant="ghost"
                     size="sm"
                     className="p-1"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onAction?.(notification.isRead ? new Date() : undefined ? 'mark_unread' : 'mark_read');
+                      onAction?.(isNotificationRead(notification) ? 'mark_unread' : 'mark_read');
                     }}
                   >
-                    {notification.isRead ? new Date() : undefined ? (
+                    {isNotificationRead(notification) ? (
                       <EyeSlashIcon className="w-4 h-4" />
                     ) : (
                       <EyeIcon className="w-4 h-4" />
@@ -680,7 +685,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
     // Apply selected filter
     switch (selectedFilter) {
       case 'unread':
-        filtered = filtered.filter(n => !n.isRead ? new Date() : undefined);
+        filtered = filtered.filter(n => !isNotificationRead(n));
         break;
       case 'starred':
         filtered = filtered.filter(n => n.tracking.starredAt);
@@ -711,15 +716,15 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
         break;
       case 'unread_first':
         filtered.sort((a, b) => {
-          if (!a.isRead ? new Date() : undefined && b.isRead ? new Date() : undefined) return -1;
-          if (a.isRead ? new Date() : undefined && !b.isRead ? new Date() : undefined) return 1;
+          if (!isNotificationRead(a) && isNotificationRead(b)) return -1;
+          if (isNotificationRead(a) && !isNotificationRead(b)) return 1;
           return toDate(b.createdAt).getTime() - toDate(a.createdAt).getTime();
         });
         break;
       case 'read_first':
         filtered.sort((a, b) => {
-          if (a.isRead ? new Date() : undefined && !b.isRead ? new Date() : undefined) return -1;
-          if (!a.isRead ? new Date() : undefined && b.isRead ? new Date() : undefined) return 1;
+          if (isNotificationRead(a) && !isNotificationRead(b)) return -1;
+          if (!isNotificationRead(a) && isNotificationRead(b)) return 1;
           return toDate(b.createdAt).getTime() - toDate(a.createdAt).getTime();
         });
         break;
@@ -732,7 +737,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
     return filtered.slice(0, maxNotifications);
   }, [allNotifications, searchQuery, selectedFilter, selectedSort, maxNotifications]);
 
-  const unreadCount = allNotifications.filter(n => !n.isRead ? new Date() : undefined).length;
+  const unreadCount = allNotifications.filter(n => !isNotificationRead(n)).length;
   const selectedCount = selectedNotifications.size;
   const allSelected = filteredNotifications.length > 0 && 
     filteredNotifications.every(n => selectedNotifications.has(n.id));
