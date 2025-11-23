@@ -78,6 +78,17 @@ import { useAuth } from '@/hooks/auth/useAuth';
 
 // Types
 import type { Product } from '@/types';
+
+// Utils
+import {
+  getProductImage,
+  getProductMedia,
+  getProductInventory,
+  getProductPricing,
+  getProductRating,
+  isProductInStock,
+  getBrandName,
+} from '@/utils/productHelpers';
 import type { CartItem as CartItemType } from '@/hooks/useCart';
 import type { Coupon } from '@/types/payment.types';
 
@@ -493,8 +504,8 @@ export default function CartPage() {
                 {/* Product Image */}
                 <div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden relative">
                   <Image
-                    src={item.product.media.images[0]?.url || '/placeholder.jpg'}
-                    alt={item.product.media.images[0]?.alt || item.product.name}
+                    src={getProductImage(item.product)}
+                    alt={item.product.name}
                     fill
                     className="object-cover"
                     sizes="96px"
@@ -509,9 +520,9 @@ export default function CartPage() {
                         {item.product.name}
                       </h3>
                       <p className="text-sm text-gray-500">SKU: {item.product.sku}</p>
-                      
+
                       {/* Stock Status */}
-                      {item.product.inventory.isInStock ? (
+                      {isProductInStock(item.product) ? (
                         <Badge variant="success" className="mt-1">
                           In Stock
                         </Badge>
@@ -547,7 +558,7 @@ export default function CartPage() {
                       </span>
                       <button
                         onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                        disabled={isUpdating === item.id || item.quantity >= item.product.inventory.availableQuantity}
+                        disabled={isUpdating === item.id || item.quantity >= (getProductInventory(item.product)?.availableQuantity || 0)}
                         className="px-3 py-1 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         +
@@ -628,7 +639,7 @@ export default function CartPage() {
               <div key={item.id} className="border border-gray-200 rounded-lg p-3">
                 <div className="w-full h-32 relative rounded-lg mb-2 overflow-hidden">
                   <Image
-                    src={item.product.media.images[0]?.url || '/placeholder.jpg'}
+                    src={getProductImage(item.product)}
                     alt={item.product.name}
                     fill
                     className="object-cover"
@@ -931,7 +942,7 @@ export default function CartPage() {
             name: item.product.name,
             price: item.price.amount,
             quantity: item.quantity,
-            image: item.product.media.images[0]?.url || '/placeholder.jpg'
+            image: getProductImage(item.product)
           }))}
         />
       )}
@@ -943,16 +954,18 @@ export default function CartPage() {
             name: showQuickView.name,
             slug: showQuickView.slug,
             description: showQuickView.description,
-            images: showQuickView.media?.images?.map(img => img.url) || [],
-            price: showQuickView.pricing.salePrice?.amount || showQuickView.pricing.basePrice.amount,
-            originalPrice: showQuickView.pricing.compareAtPrice?.amount,
-            rating: showQuickView.rating.average,
-            reviewCount: showQuickView.reviewCount,
-            inStock: showQuickView.inventory.isInStock,
-            stockLevel: showQuickView.inventory.availableQuantity,
-            brand: showQuickView.brand?.name,
+            images: getProductMedia(showQuickView)?.images?.map(img =>
+              typeof img === 'string' ? img : img.url
+            ) || [],
+            price: getProductPricing(showQuickView)?.salePrice?.amount || getProductPricing(showQuickView)?.basePrice?.amount || 0,
+            originalPrice: getProductPricing(showQuickView)?.compareAtPrice?.amount,
+            rating: getProductRating(showQuickView)?.average || 0,
+            reviewCount: showQuickView.reviewCount || 0,
+            inStock: isProductInStock(showQuickView),
+            stockLevel: getProductInventory(showQuickView)?.availableQuantity || 0,
+            brand: getBrandName(showQuickView.brand),
             sku: showQuickView.sku,
-            variants: showQuickView.variantOptions.map(opt => ({
+            variants: showQuickView.variantOptions?.map(opt => ({
               name: opt.name,
               options: opt.values.map(val => ({
                 value: val.value,

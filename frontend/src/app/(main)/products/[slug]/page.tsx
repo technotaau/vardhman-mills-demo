@@ -72,6 +72,21 @@ import type { Product, ProductVariant } from '@/types/product.types';
 // Utils
 import { cn, formatCurrency } from '@/lib/utils';
 import { API_ENDPOINTS } from '@/lib/constants';
+import {
+  getProductPrice,
+  getProductSalePrice,
+  getProductComparePrice,
+  getProductImage,
+  getProductStock,
+  getProductRatingValue,
+  getProductReviewCount,
+  getProductMedia,
+  getProductInventory,
+  getProductRating,
+  getProductSpecifications,
+  isProductInStock,
+  formatPrice,
+} from '@/utils/productHelpers';
 
 // Icons
 import {
@@ -328,7 +343,11 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
 
       // Set first variant as default
       if (mockProduct.variants && mockProduct.variants.length > 0) {
-        setSelectedVariant(mockProduct.variants[0]);
+        const firstVariant = mockProduct.variants[0];
+        // Type guard to ensure it's a ProductVariant
+        if ('productId' in firstVariant && 'name' in firstVariant) {
+          setSelectedVariant(firstVariant as ProductVariant);
+        }
       }
 
       // Log API endpoint for future real data fetching
@@ -344,7 +363,9 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
   }, [slug, generateMockProduct, toast]);
 
   // Calculate current price (needed for callbacks)
-  const currentPrice = product ? (selectedVariant?.pricing?.salePrice?.amount || product.pricing.salePrice?.amount || product.pricing.basePrice.amount) : 0;
+  const currentPrice = product
+    ? (selectedVariant?.pricing?.salePrice?.amount || getProductSalePrice(product) || getProductPrice(product))
+    : 0;
 
   // Check delivery availability
   const checkDelivery = useCallback(async () => {
@@ -506,7 +527,7 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
               product={product}
             />
             {/* Alternative Breadcrumbs component for mobile */}
-            {isMobile && (
+            {isMobile && product.category && (
               <Breadcrumbs
                 items={[
                   { label: 'Home', href: '/' },
@@ -543,9 +564,9 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
               />
 
               {/* View All Images Button */}
-              {product.media.images.length > 1 && (
+              {getProductMedia(product)?.images && getProductMedia(product)!.images!.length > 1 && (
                 <div className="flex gap-2 overflow-x-auto pb-2">
-                  {product.media.images.map((image, index) => (
+                  {getProductMedia(product)!.images!.map((image, index) => (
                     <button
                       key={index}
                       onClick={() => {
@@ -556,8 +577,8 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
                       className="flex-shrink-0 w-20 h-20 rounded border-2 hover:border-primary-600 transition-colors"
                     >
                       <Image
-                        src={image.url}
-                        alt={image.alt || `${product.name} - Image ${index + 1}`}
+                        src={typeof image === 'string' ? image : image.url}
+                        alt={(typeof image === 'string' ? '' : image.alt) || `${product.name} - Image ${index + 1}`}
                         width={80}
                         height={80}
                         className="w-full h-full object-cover rounded"
@@ -568,7 +589,7 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
               )}
 
               {/* Image Zoom Modal - Opens when thumbnail clicked */}
-              {showImageZoom && product.media.images[selectedImage] && (
+              {showImageZoom && getProductMedia(product)?.images?.[selectedImage] && (
                 <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
                   <button
                     onClick={() => setShowImageZoom(false)}
@@ -580,8 +601,14 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
                     </svg>
                   </button>
                   <ProductImageZoom
-                    src={product.media.images[selectedImage].url}
-                    alt={product.media.images[selectedImage].alt || product.name}
+                    src={(() => {
+                      const img = getProductMedia(product)!.images![selectedImage];
+                      return typeof img === 'string' ? img : img.url;
+                    })()}
+                    alt={(() => {
+                      const img = getProductMedia(product)!.images![selectedImage];
+                      return typeof img === 'string' ? product.name : (img.alt || product.name);
+                    })()}
                     enableFullscreen={true}
                     showControls={true}
                   />
@@ -616,7 +643,7 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
                           value={quantity}
                           onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                           min={1}
-                          max={product.inventory.quantity}
+                          max={getProductStock(product)}
                           className="w-20"
                           placeholder="Qty"
                         />
@@ -624,19 +651,27 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
                           <select
                             value={selectedVariant?.id || ''}
                             onChange={(e) => {
-                              const variant = product.variants.find(v => v.id === e.target.value);
-                              if (variant) handleVariantChange(variant);
+                              const variant = product.variants.find(v =>
+                                ('id' in v ? v.id : v._id) === e.target.value
+                              );
+                              if (variant && 'productId' in variant && 'name' in variant) {
+                                handleVariantChange(variant as ProductVariant);
+                              }
                             }}
                             className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                             aria-label="Select product variant"
                             title="Choose a variant"
                           >
                             <option value="">Select Variant</option>
-                            {product.variants.map(variant => (
-                              <option key={variant.id} value={variant.id}>
-                                {variant.name}
-                              </option>
-                            ))}
+                            {product.variants.map(variant => {
+                              const variantId = 'id' in variant ? variant.id : variant._id;
+                              const variantName = 'name' in variant ? variant.name : variant.sku || '';
+                              return (
+                                <option key={variantId} value={variantId}>
+                                  {variantName}
+                                </option>
+                              );
+                            })}
                           </select>
                         )}
                       </div>
@@ -664,26 +699,29 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
                   <span className="text-3xl font-bold text-gray-900">
                     {formatCurrency(currentPrice)}
                   </span>
-                  {product.pricing.compareAtPrice && product.pricing.compareAtPrice.amount > currentPrice && (
-                    <>
-                      <span className="text-xl text-gray-500 line-through">
-                        {formatCurrency(product.pricing.compareAtPrice.amount)}
-                      </span>
-                      <Badge variant="success" className="text-lg">
-                        {Math.round(((product.pricing.compareAtPrice.amount - currentPrice) / product.pricing.compareAtPrice.amount) * 100)}% OFF
-                      </Badge>
-                    </>
-                  )}
+                  {(() => {
+                    const comparePrice = getProductComparePrice(product);
+                    return comparePrice && comparePrice > currentPrice && (
+                      <>
+                        <span className="text-xl text-gray-500 line-through">
+                          {formatCurrency(comparePrice)}
+                        </span>
+                        <Badge variant="success" className="text-lg">
+                          {Math.round(((comparePrice - currentPrice) / comparePrice) * 100)}% OFF
+                        </Badge>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 {/* Stock Status */}
                 <div className="flex items-center gap-2">
-                  {product.inventory.isInStock ? (
+                  {isProductInStock(product) ? (
                     <>
                       <CheckCircleIcon className="w-5 h-5 text-green-600" />
                       <span className="text-green-600 font-medium">
                         In Stock
-                        {product.inventory.isLowStock && ' (Limited Stock)'}
+                        {getProductInventory(product)?.isLowStock && ' (Limited Stock)'}
                       </span>
                     </>
                   ) : (
@@ -702,16 +740,16 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
                         key={i}
                         className={cn(
                           'w-5 h-5',
-                          i < Math.floor(product.rating.average)
+                          i < Math.floor(getProductRatingValue(product))
                             ? 'text-yellow-400'
                             : 'text-gray-300'
                         )}
                       />
                     ))}
                   </div>
-                  <span className="text-gray-700 font-medium">{product.rating.average.toFixed(1)}</span>
+                  <span className="text-gray-700 font-medium">{getProductRatingValue(product).toFixed(1)}</span>
                   <span className="text-gray-500">
-                    ({product.rating.count} reviews)
+                    ({getProductReviewCount(product)} reviews)
                   </span>
                 </div>
               </div>
@@ -727,7 +765,7 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
                   {product.description.substring(0, 150)}...
                 </TabsContent>
                 <TabsContent value="specs" className="text-sm text-gray-600 p-4 bg-gray-50 rounded">
-                  {product.specifications.slice(0, 3).map((spec, i) => (
+                  {getProductSpecifications(product).slice(0, 3).map((spec, i) => (
                     <div key={i} className="flex justify-between py-1">
                       <span className="font-medium">{spec.name}:</span>
                       <span>{spec.value}</span>
@@ -757,20 +795,20 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
                 <ProductQuantity
                   value={quantity}
                   onChange={setQuantity}
-                  max={product.inventory.quantity}
-                  disabled={!product.inventory.isInStock}
+                  max={getProductStock(product)}
+                  disabled={!isProductInStock(product)}
                 />
-                <InformationCircleIcon 
-                  className="w-5 h-5 text-gray-400 cursor-help" 
-                  title={`Maximum available: ${product.inventory.quantity}`}
+                <InformationCircleIcon
+                  className="w-5 h-5 text-gray-400 cursor-help"
+                  title={`Maximum available: ${getProductStock(product)}`}
                 />
               </div>
 
               {/* Stock Level Indicator with StarIcon */}
-              {product.inventory.isInStock && product.inventory.quantity < 10 && (
+              {isProductInStock(product) && getProductStock(product) < 10 && (
                 <div className="flex items-center gap-2 text-orange-600 text-sm">
                   <StarIcon className="w-4 h-4" />
-                  <span>Only {product.inventory.quantity} left in stock - order soon!</span>
+                  <span>Only {getProductStock(product)} left in stock - order soon!</span>
                 </div>
               )}
 
@@ -781,7 +819,7 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
                     product={product}
                     quantity={quantity}
                     selectedVariant={selectedVariant || undefined}
-                    disabled={!product.inventory.isInStock}
+                    disabled={!isProductInStock(product)}
                     className="flex-1"
                   />
                   <Button
@@ -810,7 +848,7 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
                   variant="secondary"
                   className="w-full"
                   onClick={handleBuyNow}
-                  disabled={!product.inventory.isInStock}
+                  disabled={!isProductInStock(product)}
                 >
                   Buy Now
                 </Button>
@@ -874,11 +912,19 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Quick Variant Selection:</label>
                   <Select
-                    options={product.variants.map(v => ({ label: v.name, value: v.id }))}
+                    options={product.variants.map(v => {
+                      const variantId = 'id' in v ? v.id : v._id || '';
+                      const variantName = 'name' in v ? v.name : v.sku || '';
+                      return { label: variantName, value: variantId };
+                    })}
                     value={selectedVariant?.id}
                     onValueChange={(value: string | number) => {
-                      const variant = product.variants.find(v => v.id === value);
-                      if (variant) handleVariantChange(variant);
+                      const variant = product.variants.find(v =>
+                        ('id' in v ? v.id : v._id) === value
+                      );
+                      if (variant && 'productId' in variant && 'name' in variant) {
+                        handleVariantChange(variant as ProductVariant);
+                      }
                     }}
                     placeholder="Choose a variant"
                   />
@@ -931,27 +977,27 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
           </motion.div>
 
           {/* Alternative Media Gallery View */}
-          {!isMobile && product.media.images.length > 3 && (
+          {!isMobile && getProductMedia(product)?.images && getProductMedia(product)!.images!.length > 3 && (
             <Card className="mb-12">
               <CardHeader>
                 <CardTitle>Product Gallery</CardTitle>
               </CardHeader>
               <CardContent>
                 <ImageGallery
-                  images={product.media.images.map((img, idx) => ({
+                  images={getProductMedia(product)!.images!.map((img, idx) => ({
                     id: `img-${idx}`,
-                    src: img.url,
-                    alt: img.alt || product.name,
-                    thumbnail: img.url
+                    src: typeof img === 'string' ? img : img.url,
+                    alt: (typeof img === 'string' ? product.name : img.alt) || product.name,
+                    thumbnail: typeof img === 'string' ? img : img.url
                   }))}
                 />
                 {/* Featured Image with OptimizedImage */}
                 <div className="mt-4 grid grid-cols-3 gap-4">
-                  {product.media.images.slice(0, 3).map((image, index) => (
+                  {getProductMedia(product)!.images!.slice(0, 3).map((image, index) => (
                     <div key={index} className="aspect-square">
                       <OptimizedImage
-                        src={image.url}
-                        alt={image.alt || `${product.name} - View ${index + 1}`}
+                        src={typeof image === 'string' ? image : image.url}
+                        alt={(typeof image === 'string' ? '' : image.alt) || `${product.name} - View ${index + 1}`}
                         width={300}
                         height={300}
                         className="rounded-lg"
@@ -1056,7 +1102,7 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
           )}
 
           {/* ProductMediaCarousel for video content */}
-          {product.media.videos && product.media.videos.length > 0 && (
+          {getProductMedia(product)?.videos && getProductMedia(product)!.videos!.length > 0 && (
             <Card className="mb-12">
               <CardHeader>
                 <CardTitle>Product Videos</CardTitle>
