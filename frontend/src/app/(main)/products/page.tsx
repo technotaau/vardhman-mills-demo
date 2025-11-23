@@ -65,6 +65,7 @@ import type { FilterState, GridLayout, ProductSortOption } from '@/components/pr
 
 // Utils
 import { cn, formatCurrency } from '@/lib/utils';
+import { getProductPricing, getProductInventory } from '@/utils/productHelpers';
 // API_ENDPOINTS available from constants if needed for future API integration
 
 // Icons
@@ -227,14 +228,18 @@ function ProductsPageContent({ initialProducts = [], initialTotal = 0 }: Product
     switch (sort) {
       case 'price_asc':
         return sorted.sort((a, b) => {
-          const aPrice = a.pricing.salePrice?.amount || a.pricing.basePrice.amount;
-          const bPrice = b.pricing.salePrice?.amount || b.pricing.basePrice.amount;
+          const aPricing = getProductPricing(a);
+          const bPricing = getProductPricing(b);
+          const aPrice = aPricing?.salePrice?.amount || aPricing?.basePrice?.amount || 0;
+          const bPrice = bPricing?.salePrice?.amount || bPricing?.basePrice?.amount || 0;
           return aPrice - bPrice;
         });
       case 'price_desc':
         return sorted.sort((a, b) => {
-          const aPrice = a.pricing.salePrice?.amount || a.pricing.basePrice.amount;
-          const bPrice = b.pricing.salePrice?.amount || b.pricing.basePrice.amount;
+          const aPricing = getProductPricing(a);
+          const bPricing = getProductPricing(b);
+          const aPrice = aPricing?.salePrice?.amount || aPricing?.basePrice?.amount || 0;
+          const bPrice = bPricing?.salePrice?.amount || bPricing?.basePrice?.amount || 0;
           return bPrice - aPrice;
         });
       case 'name_asc':
@@ -273,7 +278,8 @@ function ProductsPageContent({ initialProducts = [], initialTotal = 0 }: Product
     // Price filter
     filtered = filtered.filter(
       p => {
-        const price = p.pricing?.salePrice?.amount || p.pricing?.basePrice?.amount || p.price || 0;
+        const pricing = getProductPricing(p);
+        const price = pricing?.salePrice?.amount || pricing?.basePrice?.amount || (p as any).price || 0;
         return price >= filters.priceRange.min && price <= filters.priceRange.max;
       }
     );
@@ -325,9 +331,9 @@ function ProductsPageContent({ initialProducts = [], initialTotal = 0 }: Product
 
     // Availability filter
     if (filters.availability === 'in_stock') {
-      filtered = filtered.filter(p => p.inventory.isInStock !== false);
+      filtered = filtered.filter(p => getProductInventory(p)?.isInStock !== false);
     } else if (filters.availability === 'out_of_stock') {
-      filtered = filtered.filter(p => p.inventory.isInStock === false);
+      filtered = filtered.filter(p => getProductInventory(p)?.isInStock === false);
     }
 
     // Thread count filter
