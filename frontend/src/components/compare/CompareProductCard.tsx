@@ -174,7 +174,9 @@ const getProductName = (product: ComparisonProduct): string => {
  * Get product brand
  */
 const getProductBrand = (product: ComparisonProduct): string | undefined => {
-  return product.product?.brand?.name;
+  const brand = product.product?.brand;
+  if (!brand) return undefined;
+  return typeof brand === 'string' ? brand : brand.name;
 };
 
 /**

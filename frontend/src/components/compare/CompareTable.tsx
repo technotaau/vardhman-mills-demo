@@ -535,7 +535,7 @@ const ProductHeaderCell: React.FC<ProductHeaderCellProps> = ({
 
       {/* Brand */}
       {product.product?.brand && (
-        <p className="text-xs text-gray-500 mb-2">{product.product.brand.name}</p>
+        <p className="text-xs text-gray-500 mb-2">{typeof product.product.brand === 'string' ? product.product.brand : product.product.brand.name}</p>
       )}
 
       {/* Price */}

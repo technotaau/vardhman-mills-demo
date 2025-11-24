@@ -433,7 +433,7 @@ export const ProfileInfo: React.FC<ProfileInfoProps> = ({
                 {profileUser.avatar ? (
                   <Image
                     src={profileUser.avatar}
-                    alt={profileUser.firstName}
+                    alt={profileUser.firstName || 'User avatar'}
                     width={128}
                     height={128}
                     className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"

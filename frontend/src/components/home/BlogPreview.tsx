@@ -76,7 +76,6 @@ import { Separator } from '@/components/ui/Separator';
 
 // Import Types
 import type { BlogPost, BlogCategory, BlogTag, BlogPostStatus } from '@/types/blog.types';
-import type { BlogPostType } from '@/components/blog';
 
 // Import Utils
 import { cn } from '@/lib/utils';
@@ -719,8 +718,8 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
         );
       }
       if (filter.tag) {
-        result = result.filter(post => 
-          post.tags.some(tag => 
+        result = result.filter(post =>
+          post.tags.some((tag: BlogTag) =>
             tag.name.toLowerCase().includes(filter.tag!.toLowerCase()) ||
             tag.slug.toLowerCase().includes(filter.tag!.toLowerCase())
           )
@@ -754,7 +753,7 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
         post.excerpt.toLowerCase().includes(query) ||
         post.author.name.toLowerCase().includes(query) ||
         post.category.name.toLowerCase().includes(query) ||
-        post.tags.some(tag => tag.name.toLowerCase().includes(query))
+        post.tags.some((tag: BlogTag) => tag.name.toLowerCase().includes(query))
       );
     }
 
@@ -768,7 +767,7 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
     // Apply tag filter
     if (selectedTags.length > 0) {
       result = result.filter(post =>
-        selectedTags.every(tagName => post.tags.some(tag => tag.name === tagName))
+        selectedTags.every(tagName => post.tags.some((tag: BlogTag) => tag.name === tagName))
       );
     }
 
@@ -1377,7 +1376,7 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
               {/* Tags */}
               {showTags && post.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {post.tags.slice(0, 3).map(tag => (
+                  {post.tags.slice(0, 3).map((tag: BlogTag) => (
                     <span
                       key={tag.id}
                       className="text-xs text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
