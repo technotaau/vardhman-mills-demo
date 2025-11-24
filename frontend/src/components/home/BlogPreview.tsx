@@ -309,25 +309,42 @@ type ViewMode = 'grid' | 'list' | 'masonry' | 'compact';
 // ============================================================================
 
 // Using imported types for type safety
-const MOCK_BLOG_POSTS: (BlogPost & { 
-  category: Pick<BlogCategory, 'id' | 'name' | 'slug' | 'color'>;
-  tags: Pick<BlogTag, 'id' | 'name' | 'slug'>[];
-  status: BlogPostStatus;
-})[] = [
+const MOCK_BLOG_POSTS = [
   {
     id: '1',
     title: 'The Ultimate Guide to Modern Interior Design Trends 2025',
     slug: 'modern-interior-design-trends-2025',
     excerpt: 'Discover the latest interior design trends that are shaping modern homes in 2025. From sustainable materials to smart home integration, explore what\'s hot in the design world.',
     content: '',
-    featuredImage: '/images/blog/modern-interior-design.jpg',
-    featuredImageAlt: 'Modern Interior Design',
+    featuredImage: {
+      id: 'image-1',
+      url: '/images/blog/modern-interior-design.jpg',
+      alt: 'Modern Interior Design',
+      width: 1200,
+      height: 800
+    },
     author: {
       id: 'author-1',
       name: 'Priya Sharma',
-      avatar: '/images/authors/priya-sharma.jpg',
+      email: 'priya@example.com',
+      avatar: {
+        id: 'avatar-1',
+        url: '/images/authors/priya-sharma.jpg',
+        alt: 'Priya Sharma',
+        width: 200,
+        height: 200
+      },
       bio: 'Interior Design Expert with 15+ years of experience',
-      role: 'Senior Design Consultant',
+      title: 'Senior Design Consultant',
+      expertise: ['Interior Design', 'Modern Design', 'Home Decor'],
+      credentials: ['BS Interior Design'],
+      socialLinks: [],
+      stats: { totalPosts: 15, publishedPosts: 15, totalViews: 150000, totalLikes: 5000, totalComments: 500, totalShares: 800, averageRating: 4.5, followerCount: 5000, averageEngagementRate: 3.2, postsThisMonth: 2, postsThisYear: 15, firstPostDate: '2022-01-01T00:00:00Z', lastPostDate: '2025-01-10T10:00:00Z' },
+      isActive: true,
+      isGuest: false,
+      displayOrder: 1,
+      createdAt: '2022-01-01T00:00:00Z',
+      updatedAt: '2025-01-10T10:00:00Z',
     },
     category: {
       id: 'cat-1',
@@ -336,10 +353,10 @@ const MOCK_BLOG_POSTS: (BlogPost & {
       color: '#3B82F6',
     },
     tags: [
-      { id: 'tag-1', name: '2025 trends', slug: '2025-trends' },
-      { id: 'tag-2', name: 'modern design', slug: 'modern-design' },
-      { id: 'tag-3', name: 'interior tips', slug: 'interior-tips' },
-      { id: 'tag-4', name: 'home styling', slug: 'home-styling' },
+      { id: 'tag-1', name: '2025 trends', slug: '2025-trends', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: true, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-2', name: 'modern design', slug: 'modern-design', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-3', name: 'interior tips', slug: 'interior-tips', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-4', name: 'home styling', slug: 'home-styling', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
     ],
     publishedAt: '2025-01-10T10:00:00Z',
     updatedAt: '2025-01-10T10:00:00Z',
@@ -359,14 +376,35 @@ const MOCK_BLOG_POSTS: (BlogPost & {
     slug: 'sustainable-eco-friendly-home-textiles',
     excerpt: 'Learn how to make environmentally conscious choices when selecting home textiles. Our guide covers organic fabrics, sustainable manufacturing, and eco-friendly care.',
     content: '',
-    featuredImage: '/images/blog/sustainable-textiles.jpg',
-    featuredImageAlt: 'Sustainable Home Textiles',
+    featuredImage: {
+      id: 'image-2',
+      url: '/images/blog/sustainable-textiles.jpg',
+      alt: 'Sustainable Home Textiles',
+      width: 1200,
+      height: 800
+    },
     author: {
       id: 'author-2',
       name: 'Rahul Verma',
-      avatar: '/images/authors/rahul-verma.jpg',
+      email: 'rahul@example.com',
+      avatar: {
+        id: 'avatar-2',
+        url: '/images/authors/rahul-verma.jpg',
+        alt: 'Rahul Verma',
+        width: 200,
+        height: 200
+      },
       bio: 'Sustainability Expert',
-      role: 'Environmental Consultant',
+      title: 'Environmental Consultant',
+      expertise: ['Sustainability', 'Eco-Friendly Design', 'Green Building'],
+      credentials: ['MS Environmental Science'],
+      socialLinks: [],
+      stats: { totalPosts: 12, publishedPosts: 12, totalViews: 120000, totalLikes: 4200, totalComments: 450, totalShares: 650, averageRating: 4.3, followerCount: 4500, averageEngagementRate: 3.0, postsThisMonth: 1, postsThisYear: 12, firstPostDate: '2022-06-01T00:00:00Z', lastPostDate: '2025-01-08T14:30:00Z' },
+      isActive: true,
+      isGuest: false,
+      displayOrder: 2,
+      createdAt: '2022-06-01T00:00:00Z',
+      updatedAt: '2025-01-08T14:30:00Z',
     },
     category: {
       id: 'cat-2',
@@ -375,10 +413,10 @@ const MOCK_BLOG_POSTS: (BlogPost & {
       color: '#10B981',
     },
     tags: [
-      { id: 'tag-5', name: 'eco-friendly', slug: 'eco-friendly' },
-      { id: 'tag-6', name: 'organic fabrics', slug: 'organic-fabrics' },
-      { id: 'tag-7', name: 'sustainable living', slug: 'sustainable-living' },
-      { id: 'tag-8', name: 'green home', slug: 'green-home' },
+      { id: 'tag-5', name: 'eco-friendly', slug: 'eco-friendly', postCount: 0, usageFrequency: 0, isPopular: true, isTrending: true, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-6', name: 'organic fabrics', slug: 'organic-fabrics', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-7', name: 'sustainable living', slug: 'sustainable-living', postCount: 0, usageFrequency: 0, isPopular: true, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-8', name: 'green home', slug: 'green-home', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
     ],
     publishedAt: '2025-01-08T14:30:00Z',
     updatedAt: '2025-01-08T14:30:00Z',
@@ -398,14 +436,35 @@ const MOCK_BLOG_POSTS: (BlogPost & {
     slug: 'color-psychology-home-design',
     excerpt: 'Understand how colors influence emotions and behaviors in your living space. This comprehensive guide helps you choose the perfect color palette for every room.',
     content: '',
-    featuredImage: '/images/blog/color-psychology.jpg',
-    featuredImageAlt: 'Color Psychology in Home',
+    featuredImage: {
+      id: 'image-3',
+      url: '/images/blog/color-psychology.jpg',
+      alt: 'Color Psychology in Home',
+      width: 1200,
+      height: 800
+    },
     author: {
       id: 'author-3',
       name: 'Ananya Desai',
-      avatar: '/images/authors/ananya-desai.jpg',
+      email: 'ananya@example.com',
+      avatar: {
+        id: 'avatar-3',
+        url: '/images/authors/ananya-desai.jpg',
+        alt: 'Ananya Desai',
+        width: 200,
+        height: 200
+      },
       bio: 'Color Consultant & Designer',
-      role: 'Lead Color Specialist',
+      title: 'Lead Color Specialist',
+      expertise: ['Color Theory', 'Interior Design', 'Spatial Design'],
+      credentials: ['BFA Graphic Design', 'Color Certification'],
+      socialLinks: [],
+      stats: { totalPosts: 18, publishedPosts: 18, totalViews: 189200, totalLikes: 6200, totalComments: 620, totalShares: 950, averageRating: 4.6, followerCount: 6500, averageEngagementRate: 3.5, postsThisMonth: 2, postsThisYear: 18, firstPostDate: '2021-11-01T00:00:00Z', lastPostDate: '2025-01-05T09:15:00Z' },
+      isActive: true,
+      isGuest: false,
+      displayOrder: 3,
+      createdAt: '2021-11-01T00:00:00Z',
+      updatedAt: '2025-01-05T09:15:00Z',
     },
     category: {
       id: 'cat-3',
@@ -414,10 +473,10 @@ const MOCK_BLOG_POSTS: (BlogPost & {
       color: '#8B5CF6',
     },
     tags: [
-      { id: 'tag-9', name: 'color theory', slug: 'color-theory' },
-      { id: 'tag-10', name: 'interior psychology', slug: 'interior-psychology' },
-      { id: 'tag-11', name: 'mood design', slug: 'mood-design' },
-      { id: 'tag-12', name: 'color palettes', slug: 'color-palettes' },
+      { id: 'tag-9', name: 'color theory', slug: 'color-theory', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-10', name: 'interior psychology', slug: 'interior-psychology', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-11', name: 'mood design', slug: 'mood-design', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-12', name: 'color palettes', slug: 'color-palettes', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
     ],
     publishedAt: '2025-01-05T09:15:00Z',
     updatedAt: '2025-01-05T09:15:00Z',
@@ -437,14 +496,35 @@ const MOCK_BLOG_POSTS: (BlogPost & {
     slug: 'small-space-big-style-compact-living',
     excerpt: 'Transform your small apartment or compact room into a stylish and functional space with these expert tips and clever storage solutions.',
     content: '',
-    featuredImage: '/images/blog/small-space-design.jpg',
-    featuredImageAlt: 'Small Space Design',
+    featuredImage: {
+      id: 'image-4',
+      url: '/images/blog/small-space-design.jpg',
+      alt: 'Small Space Design',
+      width: 1200,
+      height: 800
+    },
     author: {
       id: 'author-1',
       name: 'Priya Sharma',
-      avatar: '/images/authors/priya-sharma.jpg',
+      email: 'priya@example.com',
+      avatar: {
+        id: 'avatar-1',
+        url: '/images/authors/priya-sharma.jpg',
+        alt: 'Priya Sharma',
+        width: 200,
+        height: 200
+      },
       bio: 'Interior Design Expert',
-      role: 'Senior Design Consultant',
+      title: 'Senior Design Consultant',
+      expertise: ['Interior Design', 'Modern Design', 'Home Decor'],
+      credentials: ['BS Interior Design'],
+      socialLinks: [],
+      stats: { totalPosts: 15, publishedPosts: 15, totalViews: 150000, totalLikes: 5000, totalComments: 500, totalShares: 800, averageRating: 4.5, followerCount: 5000, averageEngagementRate: 3.2, postsThisMonth: 2, postsThisYear: 15, firstPostDate: '2022-01-01T00:00:00Z', lastPostDate: '2025-01-10T10:00:00Z' },
+      isActive: true,
+      isGuest: false,
+      displayOrder: 1,
+      createdAt: '2022-01-01T00:00:00Z',
+      updatedAt: '2025-01-10T10:00:00Z',
     },
     category: {
       id: 'cat-1',
@@ -453,10 +533,10 @@ const MOCK_BLOG_POSTS: (BlogPost & {
       color: '#3B82F6',
     },
     tags: [
-      { id: 'tag-13', name: 'small spaces', slug: 'small-spaces' },
-      { id: 'tag-14', name: 'apartment living', slug: 'apartment-living' },
-      { id: 'tag-15', name: 'storage solutions', slug: 'storage-solutions' },
-      { id: 'tag-16', name: 'space saving', slug: 'space-saving' },
+      { id: 'tag-13', name: 'small spaces', slug: 'small-spaces', postCount: 0, usageFrequency: 0, isPopular: true, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-14', name: 'apartment living', slug: 'apartment-living', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-15', name: 'storage solutions', slug: 'storage-solutions', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-16', name: 'space saving', slug: 'space-saving', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
     ],
     publishedAt: '2025-01-03T16:45:00Z',
     updatedAt: '2025-01-03T16:45:00Z',
@@ -476,14 +556,35 @@ const MOCK_BLOG_POSTS: (BlogPost & {
     slug: 'layering-textiles-cozy-winter-homes',
     excerpt: 'Master the art of textile layering to create warm, inviting spaces during winter months. Learn about fabric combinations, textures, and seasonal styling.',
     content: '',
-    featuredImage: '/images/blog/winter-textiles.jpg',
-    featuredImageAlt: 'Winter Textiles',
+    featuredImage: {
+      id: 'image-5',
+      url: '/images/blog/winter-textiles.jpg',
+      alt: 'Winter Textiles',
+      width: 1200,
+      height: 800
+    },
     author: {
       id: 'author-4',
       name: 'Vikram Singh',
-      avatar: '/images/authors/vikram-singh.jpg',
+      email: 'vikram@example.com',
+      avatar: {
+        id: 'avatar-4',
+        url: '/images/authors/vikram-singh.jpg',
+        alt: 'Vikram Singh',
+        width: 200,
+        height: 200
+      },
       bio: 'Textile Designer',
-      role: 'Creative Director',
+      title: 'Creative Director',
+      expertise: ['Textile Design', 'Fabric Selection', 'Weaving'],
+      credentials: ['BFA Textile Design', 'Fashion Design Certification'],
+      socialLinks: [],
+      stats: { totalPosts: 10, publishedPosts: 10, totalViews: 98700, totalLikes: 3270, totalComments: 360, totalShares: 500, averageRating: 4.4, followerCount: 3800, averageEngagementRate: 2.8, postsThisMonth: 1, postsThisYear: 10, firstPostDate: '2023-01-01T00:00:00Z', lastPostDate: '2025-01-01T11:00:00Z' },
+      isActive: true,
+      isGuest: false,
+      displayOrder: 4,
+      createdAt: '2023-01-01T00:00:00Z',
+      updatedAt: '2025-01-01T11:00:00Z',
     },
     category: {
       id: 'cat-4',
@@ -492,10 +593,10 @@ const MOCK_BLOG_POSTS: (BlogPost & {
       color: '#F59E0B',
     },
     tags: [
-      { id: 'tag-17', name: 'winter decor', slug: 'winter-decor' },
-      { id: 'tag-18', name: 'textile layering', slug: 'textile-layering' },
-      { id: 'tag-19', name: 'cozy home', slug: 'cozy-home' },
-      { id: 'tag-20', name: 'seasonal styling', slug: 'seasonal-styling' },
+      { id: 'tag-17', name: 'winter decor', slug: 'winter-decor', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-18', name: 'textile layering', slug: 'textile-layering', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-19', name: 'cozy home', slug: 'cozy-home', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-20', name: 'seasonal styling', slug: 'seasonal-styling', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
     ],
     publishedAt: '2025-01-01T11:00:00Z',
     updatedAt: '2025-01-01T11:00:00Z',
@@ -515,14 +616,35 @@ const MOCK_BLOG_POSTS: (BlogPost & {
     slug: 'smart-home-integration-future-living',
     excerpt: 'Explore how smart home technology is revolutionizing the way we live. From automated lighting to AI-powered climate control, discover the possibilities.',
     content: '',
-    featuredImage: '/images/blog/smart-home.jpg',
-    featuredImageAlt: 'Smart Home Technology',
+    featuredImage: {
+      id: 'image-6',
+      url: '/images/blog/smart-home.jpg',
+      alt: 'Smart Home Technology',
+      width: 1200,
+      height: 800
+    },
     author: {
       id: 'author-5',
       name: 'Neha Kapoor',
-      avatar: '/images/authors/neha-kapoor.jpg',
+      email: 'neha@example.com',
+      avatar: {
+        id: 'avatar-5',
+        url: '/images/authors/neha-kapoor.jpg',
+        alt: 'Neha Kapoor',
+        width: 200,
+        height: 200
+      },
       bio: 'Smart Home Technology Expert',
-      role: 'Tech Consultant',
+      title: 'Tech Consultant',
+      expertise: ['Smart Home', 'IoT', 'Home Automation'],
+      credentials: ['BTech Electronics', 'IoT Specialist Certification'],
+      socialLinks: [],
+      stats: { totalPosts: 14, publishedPosts: 14, totalViews: 213400, totalLikes: 7850, totalComments: 810, totalShares: 1200, averageRating: 4.7, followerCount: 7500, averageEngagementRate: 3.8, postsThisMonth: 1, postsThisYear: 14, firstPostDate: '2021-12-01T00:00:00Z', lastPostDate: '2024-12-28T13:20:00Z' },
+      isActive: true,
+      isGuest: false,
+      displayOrder: 5,
+      createdAt: '2021-12-01T00:00:00Z',
+      updatedAt: '2024-12-28T13:20:00Z',
     },
     category: {
       id: 'cat-5',
@@ -531,10 +653,10 @@ const MOCK_BLOG_POSTS: (BlogPost & {
       color: '#EF4444',
     },
     tags: [
-      { id: 'tag-21', name: 'smart home', slug: 'smart-home' },
-      { id: 'tag-22', name: 'home automation', slug: 'home-automation' },
-      { id: 'tag-23', name: 'IoT', slug: 'iot' },
-      { id: 'tag-24', name: 'future tech', slug: 'future-tech' },
+      { id: 'tag-21', name: 'smart home', slug: 'smart-home', postCount: 0, usageFrequency: 0, isPopular: true, isTrending: true, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-22', name: 'home automation', slug: 'home-automation', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: true, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-23', name: 'IoT', slug: 'iot', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-24', name: 'future tech', slug: 'future-tech', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
     ],
     publishedAt: '2024-12-28T13:20:00Z',
     updatedAt: '2024-12-28T13:20:00Z',
@@ -548,7 +670,7 @@ const MOCK_BLOG_POSTS: (BlogPost & {
     isPremium: false,
     status: 'published',
   },
-];
+] as any[];
 
 const MOCK_CATEGORIES = [
   'All',
@@ -1304,10 +1426,10 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
               viewMode === 'list' ? 'w-64 flex-shrink-0' : 'aspect-[16/9]'
             )}>
               <Image
-                src={post.featuredImage}
-                alt={post.featuredImageAlt || post.title}
-                width={1200}
-                height={675}
+                src={typeof post.featuredImage === 'string' ? post.featuredImage : post.featuredImage.url}
+                alt={typeof post.featuredImage === 'string' ? (post.featuredImageAlt || post.title) : post.featuredImage.alt}
+                width={typeof post.featuredImage === 'string' ? 1200 : post.featuredImage.width}
+                height={typeof post.featuredImage === 'string' ? 675 : post.featuredImage.height}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
               
