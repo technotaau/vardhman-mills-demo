@@ -243,7 +243,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
     phone: user?.phone || '',
     dateOfBirth: '',
     gender: undefined,
-    street: user?.addresses?.[0]?.address || '',
+    street: user?.addresses?.[0]?.addressLine1 || user?.addresses?.[0]?.address || '',
     city: user?.addresses?.[0]?.city || '',
     state: user?.addresses?.[0]?.state || '',
     zipCode: user?.addresses?.[0]?.postalCode || '',

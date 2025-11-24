@@ -238,7 +238,7 @@ export interface BlogPreviewProps {
   /**
    * Custom blog posts (if not fetching from API)
    */
-  posts?: BlogPostType[];
+  posts?: BlogPost[];
 
   /**
    * Loading state
@@ -248,7 +248,7 @@ export interface BlogPreviewProps {
   /**
    * Callback when post is clicked
    */
-  onPostClick?: (post: BlogPostType) => void;
+  onPostClick?: (post: BlogPost) => void;
 
   /**
    * Callback when category is selected
@@ -278,7 +278,7 @@ export interface BlogPreviewProps {
   /**
    * Callback when post is shared
    */
-  onShare?: (post: BlogPostType) => void;
+  onShare?: (post: BlogPost) => void;
 
   /**
    * Additional CSS classes
@@ -309,7 +309,7 @@ type ViewMode = 'grid' | 'list' | 'masonry' | 'compact';
 // ============================================================================
 
 // Using imported types for type safety
-const MOCK_BLOG_POSTS: (BlogPostType & { 
+const MOCK_BLOG_POSTS: (BlogPost & { 
   category: Pick<BlogCategory, 'id' | 'name' | 'slug' | 'color'>;
   tags: Pick<BlogTag, 'id' | 'name' | 'slug'>[];
   status: BlogPostStatus;
@@ -657,9 +657,9 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
   // ============================================================================
 
   // Internal state with proper typing - BlogPost type imported for type safety
-  const [posts, setPosts] = useState<BlogPostType[]>(customPosts || MOCK_BLOG_POSTS);
-  const [filteredPosts, setFilteredPosts] = useState<BlogPostType[]>(posts);
-  const [displayedPosts, setDisplayedPosts] = useState<BlogPostType[]>([]);
+  const [posts, setPosts] = useState<BlogPost[]>(customPosts || MOCK_BLOG_POSTS);
+  const [filteredPosts, setFilteredPosts] = useState<BlogPost[]>(posts);
+  const [displayedPosts, setDisplayedPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(externalLoading);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -944,7 +944,7 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
   /**
    * Handle post click
    */
-  const handlePostClick = useCallback((post: BlogPostType) => {
+  const handlePostClick = useCallback((post: BlogPost) => {
     onPostClick?.(post);
   }, [onPostClick]);
 
@@ -997,7 +997,7 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
   /**
    * Handle share
    */
-  const handleShare = useCallback((post: BlogPostType) => {
+  const handleShare = useCallback((post: BlogPost) => {
     if (navigator.share) {
       navigator.share({
         title: post.title,
@@ -1277,7 +1277,7 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
   /**
    * Render blog post card with all features
    */
-  const renderPostCard = (post: BlogPostType, index: number) => {
+  const renderPostCard = (post: BlogPost, index: number) => {
     const isBookmarked = bookmarkedPosts.has(post.id);
     const isLiked = likedPosts.has(post.id);
 
