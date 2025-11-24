@@ -61,13 +61,6 @@ export interface GAUserProperties {
   gender?: string;
 }
 
-declare global {
-  interface Window {
-    gtag?: (...args: unknown[]) => void;
-    dataLayer?: unknown[];
-  }
-}
-
 class GoogleAnalytics {
   private isInitialized = false;
   private measurementId: string;
@@ -92,7 +85,7 @@ class GoogleAnalytics {
       // Configure gtag
       window.dataLayer = window.dataLayer || [];
       window.gtag = function gtag(...args: unknown[]) {
-        window.dataLayer?.push(args);
+        (window.dataLayer as unknown[])?.push(args);
       };
 
       // Initialize GA4
@@ -159,7 +152,7 @@ class GoogleAnalytics {
    */
   private gtag(...args: unknown[]): void {
     if (window.gtag) {
-      window.gtag(...args);
+      (window.gtag as (...args: unknown[]) => void)(...args);
     }
   }
 

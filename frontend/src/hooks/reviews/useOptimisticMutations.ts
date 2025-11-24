@@ -2,13 +2,6 @@ import { useMutation, useQueryClient, MutationFunction } from '@tanstack/react-q
 import { useCallback, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 
-// Declare global gtag interface for window object
-declare global {
-  interface Window {
-    gtag?: (command: string, targetId: string, config?: Record<string, unknown>) => void;
-  }
-}
-
 export interface OptimisticUpdate<TData, TVariables = unknown> {
   queryKey: (string | number | Record<string, unknown>)[];
   updater: (oldData: TData | undefined, variables: TVariables) => TData;

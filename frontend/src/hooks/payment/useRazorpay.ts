@@ -3,13 +3,6 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../auth/useAuth';
 
-// Razorpay types
-declare global {
-  interface Window {
-    Razorpay: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-  }
-}
-
 export interface RazorpayConfig {
   key: string;
   amount: number;
@@ -371,7 +364,10 @@ export const useRazorpay = (options: UseRazorpayOptions = {}) => {
     };
 
     try {
-      razorpayInstanceRef.current = new window.Razorpay(config);
+      if (!window.Razorpay) {
+        throw new Error('Razorpay SDK not loaded');
+      }
+      razorpayInstanceRef.current = new window.Razorpay(config as unknown as any);
       razorpayInstanceRef.current.open();
     } catch (error) {
       setPaymentInProgress(false);

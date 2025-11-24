@@ -2,17 +2,6 @@ import { Middleware, AnyAction } from '@reduxjs/toolkit';
 import { RootState } from '../index';
 import { logout, setLoading } from '../slices/authSlice';
 
-// Extend Window interface for gtag
-declare global {
-  interface Window {
-    gtag?: (
-      command: 'config' | 'set' | 'event',
-      targetId: string,
-      config?: Record<string, unknown>
-    ) => void;
-  }
-}
-
 // Auth middleware for handling authentication-related actions and side effects
 const authMiddleware: Middleware<Record<string, never>, RootState> = (store) => (next) => (action) => {
   const typedAction = action as AnyAction;

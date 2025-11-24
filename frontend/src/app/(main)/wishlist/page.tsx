@@ -275,6 +275,36 @@ export default function WishlistPage() {
   const getProductName = (item: WishlistItem) => item.product.name;
   const getProductId = (item: WishlistItem) => item.product.id;
 
+  // Helper to convert simplified wishlist product to full Product type for cart
+  const toFullProduct = (item: WishlistItem): Product => {
+    const now = new Date().toISOString();
+    const categoryValue = item.product.category || 'uncategorized';
+    const categoryObj = typeof categoryValue === 'string'
+      ? { id: categoryValue, name: categoryValue, slug: categoryValue, createdAt: now, updatedAt: now }
+      : (categoryValue as { id: string; name: string; slug: string });
+
+    return {
+      ...item.product,
+      // Required Product fields with defaults
+      id: item.product.id,
+      categoryId: typeof categoryValue === 'string' ? categoryValue : (categoryObj?.id || 'uncategorized'),
+      category: categoryObj as unknown as Category,
+      collectionIds: [],
+      collections: [],
+      variants: [],
+      // Stock info
+      inventory: {
+        isInStock: item.product.inStock,
+        quantity: item.product.stockQuantity,
+        lowStockThreshold: 10,
+        trackInventory: true,
+      },
+      // Timestamps
+      createdAt: now,
+      updatedAt: now,
+    } as unknown as Product;
+  };
+
   const [isLoading, setIsLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [showQuickView, setShowQuickView] = useState<Product | null>(null);
@@ -340,7 +370,11 @@ export default function WishlistPage() {
     if (wishlistState.filterBy.category) {
       filtered = filtered.filter(item => {
         const category = item.product.category;
-        const categoryName = typeof category === 'string' ? category : category?.name || '';
+        const categoryName = typeof category === 'string'
+          ? category
+          : (category && typeof category === 'object' && 'name' in category
+            ? (category as { name: string }).name
+            : '');
         return categoryName === wishlistState.filterBy.category;
       });
     }
@@ -457,9 +491,9 @@ export default function WishlistPage() {
 
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Add to cart
-      addToCart(item.product, 1);
+
+      // Add to cart (convert to full Product type)
+      addToCart(toFullProduct(item), 1);
 
       // Remove from wishlist
       setWishlistState(prev => ({
@@ -506,9 +540,9 @@ export default function WishlistPage() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Add all to cart
+      // Add all to cart (convert to full Product type)
       selectedItemsArray.forEach(item => {
-        addToCart(item.product, 1);
+        addToCart(toFullProduct(item), 1);
       });
 
       // Remove from wishlist
@@ -1161,7 +1195,7 @@ export default function WishlistPage() {
                     onSelect={() => handleSelectItem(transformedItem.id)}
                     onRemove={() => handleRemoveItem(transformedItem.id)}
                     onMoveToCart={() => handleMoveToCart(transformedItem.id)}
-                    onView={() => setShowQuickView(originalItem.product)}
+                    onView={() => setShowQuickView(toFullProduct(originalItem))}
                   />
                 </motion.div>
               );
@@ -1491,7 +1525,7 @@ export default function WishlistPage() {
                         {wishlistState.items.slice(0, 4).map((item) => (
                           <div key={`rec-${item.id}`} className="hidden">
                             <ProductCard
-                              product={item.product}
+                              product={toFullProduct(item)}
                               variant="grid"
                               showQuickView={true}
                               showActions={true}
@@ -1523,49 +1557,52 @@ export default function WishlistPage() {
                   {wishlistState.view === 'list' && wishlistState.items.length > 0 && (
                     <div className="hidden">
                       <div className="space-y-4">
-                        {wishlistState.items.map((item) => (
-                          <WishlistItem
-                            key={item.id}
-                            item={{
-                              id: item.id,
-                              wishlistId: item.id,
-                              productId: item.product.id,
-                              product: item.product,
-                              variantId: undefined,
-                              variant: undefined,
-                              addedAt: item.addedAt,
-                              notes: undefined,
-                              priority: 'medium' as const,
-                              priceAlertEnabled: item.notifyOnPriceDrop,
-                              stockAlertEnabled: item.notifyOnStock,
-                              originalPrice: {
-                                amount: item.priceWhenAdded,
-                                currency: 'INR' as const,
-                                formatted: `₹${item.priceWhenAdded}`,
-                              },
-                              isAvailable: item.product.inventory?.isInStock || false,
-                              priceChanged: false,
-                              priceChangePercentage: 0,
-                              createdAt: item.addedAt,
-                              updatedAt: item.addedAt,
-                            }}
-                            onRemove={() => handleRemoveItem(item.id)}
-                            onAddToCart={() => handleMoveToCart(item.id)}
-                            onClick={() => setShowQuickView(wishlistState.items.find(i => i.id === item.id)?.product || null)}
-                            isSelected={wishlistState.selectedItems.has(item.id)}
-                            onSelect={(checked: boolean) => {
-                              if (checked) {
-                                handleSelectItem(item.id);
-                              } else {
-                                setWishlistState(prev => {
-                                  const newSelected = new Set(prev.selectedItems);
-                                  newSelected.delete(item.id);
-                                  return { ...prev, selectedItems: newSelected };
-                                });
-                              }
-                            }}
-                          />
-                        ))}
+                        {wishlistState.items.map((item) => {
+                          const fullProduct = toFullProduct(item);
+                          return (
+                            <WishlistItemComponent
+                              key={item.id}
+                              item={{
+                                id: item.id,
+                                wishlistId: item.id,
+                                productId: item.product.id,
+                                product: fullProduct,
+                                variantId: undefined,
+                                variant: undefined,
+                                addedAt: item.addedAt,
+                                notes: undefined,
+                                priority: 'medium' as const,
+                                priceAlertEnabled: item.notifyOnPriceDrop || false,
+                                stockAlertEnabled: item.notifyOnStock || false,
+                                originalPrice: item.priceWhenAdded ? {
+                                  amount: item.priceWhenAdded,
+                                  currency: 'INR' as const,
+                                  formatted: `₹${item.priceWhenAdded}`,
+                                } : undefined,
+                                isAvailable: item.product.inStock,
+                                priceChanged: false,
+                                priceChangePercentage: 0,
+                                createdAt: item.addedAt,
+                                updatedAt: item.addedAt,
+                              }}
+                              onRemove={() => handleRemoveItem(item.id)}
+                              onAddToCart={() => handleMoveToCart(item.id)}
+                              onClick={() => setShowQuickView(fullProduct)}
+                              isSelected={wishlistState.selectedItems.has(item.id)}
+                              onSelect={(checked: boolean) => {
+                                if (checked) {
+                                  handleSelectItem(item.id);
+                                } else {
+                                  setWishlistState(prev => {
+                                    const newSelected = new Set(prev.selectedItems);
+                                    newSelected.delete(item.id);
+                                    return { ...prev, selectedItems: newSelected };
+                                  });
+                                }
+                              }}
+                            />
+                          );
+                        })}
                       </div>
                     </div>
                   )}
