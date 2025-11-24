@@ -238,16 +238,16 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
   const [formData, setFormData] = useState<ProfileFormData>({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
-    displayName: user?.displayName || '',
+    displayName: user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : '',
     email: user?.email || '',
     phone: user?.phone || '',
     dateOfBirth: '',
     gender: undefined,
-    street: user?.address?.street || '',
-    city: user?.address?.city || '',
-    state: user?.address?.state || '',
-    zipCode: user?.address?.zipCode || '',
-    country: user?.address?.country || '',
+    street: user?.addresses?.[0]?.addressLine1 || '',
+    city: user?.addresses?.[0]?.city || '',
+    state: user?.addresses?.[0]?.state || '',
+    zipCode: user?.addresses?.[0]?.postalCode || '',
+    country: user?.addresses?.[0]?.country || '',
     occupation: '',
     company: '',
     industry: '',
@@ -266,8 +266,8 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
     timezone: 'America/New_York',
     newsletter: false,
     publicProfile: true,
-    showEmail: user?.preferences?.privacy?.showEmail || false,
-    showPhone: user?.preferences?.privacy?.showPhone || false,
+    showEmail: user?.privacySettings?.showEmail || false,
+    showPhone: user?.privacySettings?.showPhone || false,
   });
 
   const [originalData, setOriginalData] = useState<ProfileFormData>(formData);
@@ -521,19 +521,26 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
           lastName: formData.lastName,
           phone: formData.phone,
           preferences: {
+            currency: user?.preferences?.currency || 'INR',
             language: formData.language || 'en',
-            privacy: {
-              showEmail: formData.showEmail || false,
-              showPhone: formData.showPhone || false,
-              allowDataCollection: true,
-            },
             notifications: {
-              email: formData.newsletter || false,
-              push: true,
+              email: true,
               sms: false,
-              marketing: formData.newsletter || false,
+              push: true,
+              marketing: false,
             },
-            theme: user?.preferences?.theme || 'system',
+            privacy: {
+              profileVisibility: user?.preferences?.privacy?.profileVisibility || 'public',
+              activityVisible: user?.preferences?.privacy?.activityVisible || true,
+            },
+          },
+          privacySettings: {
+            showEmail: formData.showEmail || false,
+            showPhone: formData.showPhone || false,
+            showAddress: user?.privacySettings?.showAddress || false,
+            showOrders: user?.privacySettings?.showOrders || false,
+            allowDataCollection: user?.privacySettings?.allowDataCollection || false,
+            allowMarketing: user?.privacySettings?.allowMarketing || false,
           },
         });
       }
@@ -564,7 +571,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [validateForm, activeUserId, formData, updateProfile, user?.preferences?.theme, notification, onProfileUpdate]);
+  }, [validateForm, activeUserId, formData, updateProfile, user, notification, onProfileUpdate]);
 
   const handleCancel = useCallback(() => {
     if (hasUnsavedChanges && showUnsavedWarning) {
@@ -804,7 +811,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-2">
                                     First Name *
-                                    {showVerificationBadges && user?.isEmailVerified ? (
+                                    {showVerificationBadges && user?.emailVerified ? (
                                       <Badge variant="success" className="ml-2 text-xs">Verified</Badge>
                                     ) : null}
                                   </label>
@@ -859,7 +866,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
                                   <label className="block text-sm font-medium text-gray-700 mb-2">
                                     <EnvelopeIcon className="inline w-4 h-4 mr-1" />
                                     Email *
-                                    {showVerificationBadges && user?.isEmailVerified ? (
+                                    {showVerificationBadges && user?.emailVerified ? (
                                       <ShieldCheckIcon className="inline w-4 h-4 ml-1 text-green-600" />
                                     ) : null}
                                   </label>
@@ -881,7 +888,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
                                   <label className="block text-sm font-medium text-gray-700 mb-2">
                                     <PhoneIcon className="inline w-4 h-4 mr-1" />
                                     Phone
-                                    {showVerificationBadges && user?.isPhoneVerified ? (
+                                    {showVerificationBadges && user?.phoneVerified ? (
                                       <ShieldCheckIcon className="inline w-4 h-4 ml-1 text-green-600" />
                                     ) : null}
                                   </label>

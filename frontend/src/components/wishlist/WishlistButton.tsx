@@ -258,9 +258,10 @@ export const WishlistButton: React.FC<WishlistButtonProps> = ({
   }
 }) => {
   // Hooks
-  const { 
-    isInWishlist: checkIsInWishlist, 
-    addToWishlist, 
+  const {
+    state,
+    isInWishlist: checkIsInWishlist,
+    addToWishlist,
     removeFromWishlist
   } = useWishlist();
   const { toast } = useToast();
@@ -277,7 +278,7 @@ export const WishlistButton: React.FC<WishlistButtonProps> = ({
     [checkIsInWishlist, product.id]
   );
   
-  const wishlistCount = items?.length || 0;
+  const wishlistCount = state?.items?.length || 0;
   const isDisabled = disabled || isLoading;
 
   // Update loading state when prop changes

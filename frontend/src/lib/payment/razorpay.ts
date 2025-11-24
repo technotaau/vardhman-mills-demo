@@ -8,12 +8,6 @@ import { PaymentRequest, PaymentResponse } from './payment-utils';
 import { PaymentValidator } from './payment-validation';
 
 // Razorpay types
-declare global {
-  interface Window {
-    Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
-  }
-}
-
 interface RazorpayOptions {
   key: string;
   amount: number;

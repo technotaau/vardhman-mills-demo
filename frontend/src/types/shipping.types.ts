@@ -1,3 +1,5 @@
+import type { Address } from './common.types';
+import type { ProductDimensions } from './product.types';
 
 export interface ShippingMethod {
   id: string;

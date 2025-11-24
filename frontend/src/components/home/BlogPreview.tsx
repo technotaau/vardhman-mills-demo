@@ -76,7 +76,6 @@ import { Separator } from '@/components/ui/Separator';
 
 // Import Types
 import type { BlogPost, BlogCategory, BlogTag, BlogPostStatus } from '@/types/blog.types';
-import type { BlogPostType } from '@/components/blog';
 
 // Import Utils
 import { cn } from '@/lib/utils';
@@ -239,7 +238,7 @@ export interface BlogPreviewProps {
   /**
    * Custom blog posts (if not fetching from API)
    */
-  posts?: BlogPostType[];
+  posts?: BlogPost[];
 
   /**
    * Loading state
@@ -249,7 +248,7 @@ export interface BlogPreviewProps {
   /**
    * Callback when post is clicked
    */
-  onPostClick?: (post: BlogPostType) => void;
+  onPostClick?: (post: BlogPost) => void;
 
   /**
    * Callback when category is selected
@@ -279,7 +278,7 @@ export interface BlogPreviewProps {
   /**
    * Callback when post is shared
    */
-  onShare?: (post: BlogPostType) => void;
+  onShare?: (post: BlogPost) => void;
 
   /**
    * Additional CSS classes
@@ -310,25 +309,42 @@ type ViewMode = 'grid' | 'list' | 'masonry' | 'compact';
 // ============================================================================
 
 // Using imported types for type safety
-const MOCK_BLOG_POSTS: (BlogPostType & { 
-  category: Pick<BlogCategory, 'id' | 'name' | 'slug' | 'color'>;
-  tags: Pick<BlogTag, 'id' | 'name' | 'slug'>[];
-  status: BlogPostStatus;
-})[] = [
+const MOCK_BLOG_POSTS = [
   {
     id: '1',
     title: 'The Ultimate Guide to Modern Interior Design Trends 2025',
     slug: 'modern-interior-design-trends-2025',
     excerpt: 'Discover the latest interior design trends that are shaping modern homes in 2025. From sustainable materials to smart home integration, explore what\'s hot in the design world.',
     content: '',
-    featuredImage: '/images/blog/modern-interior-design.jpg',
-    featuredImageAlt: 'Modern Interior Design',
+    featuredImage: {
+      id: 'image-1',
+      url: '/images/blog/modern-interior-design.jpg',
+      alt: 'Modern Interior Design',
+      width: 1200,
+      height: 800
+    },
     author: {
       id: 'author-1',
       name: 'Priya Sharma',
-      avatar: '/images/authors/priya-sharma.jpg',
+      email: 'priya@example.com',
+      avatar: {
+        id: 'avatar-1',
+        url: '/images/authors/priya-sharma.jpg',
+        alt: 'Priya Sharma',
+        width: 200,
+        height: 200
+      },
       bio: 'Interior Design Expert with 15+ years of experience',
-      role: 'Senior Design Consultant',
+      title: 'Senior Design Consultant',
+      expertise: ['Interior Design', 'Modern Design', 'Home Decor'],
+      credentials: ['BS Interior Design'],
+      socialLinks: [],
+      stats: { totalPosts: 15, publishedPosts: 15, totalViews: 150000, totalLikes: 5000, totalComments: 500, totalShares: 800, averageRating: 4.5, followerCount: 5000, averageEngagementRate: 3.2, postsThisMonth: 2, postsThisYear: 15, firstPostDate: '2022-01-01T00:00:00Z', lastPostDate: '2025-01-10T10:00:00Z' },
+      isActive: true,
+      isGuest: false,
+      displayOrder: 1,
+      createdAt: '2022-01-01T00:00:00Z',
+      updatedAt: '2025-01-10T10:00:00Z',
     },
     category: {
       id: 'cat-1',
@@ -337,10 +353,10 @@ const MOCK_BLOG_POSTS: (BlogPostType & {
       color: '#3B82F6',
     },
     tags: [
-      { id: 'tag-1', name: '2025 trends', slug: '2025-trends' },
-      { id: 'tag-2', name: 'modern design', slug: 'modern-design' },
-      { id: 'tag-3', name: 'interior tips', slug: 'interior-tips' },
-      { id: 'tag-4', name: 'home styling', slug: 'home-styling' },
+      { id: 'tag-1', name: '2025 trends', slug: '2025-trends', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: true, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-2', name: 'modern design', slug: 'modern-design', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-3', name: 'interior tips', slug: 'interior-tips', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-4', name: 'home styling', slug: 'home-styling', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
     ],
     publishedAt: '2025-01-10T10:00:00Z',
     updatedAt: '2025-01-10T10:00:00Z',
@@ -360,14 +376,35 @@ const MOCK_BLOG_POSTS: (BlogPostType & {
     slug: 'sustainable-eco-friendly-home-textiles',
     excerpt: 'Learn how to make environmentally conscious choices when selecting home textiles. Our guide covers organic fabrics, sustainable manufacturing, and eco-friendly care.',
     content: '',
-    featuredImage: '/images/blog/sustainable-textiles.jpg',
-    featuredImageAlt: 'Sustainable Home Textiles',
+    featuredImage: {
+      id: 'image-2',
+      url: '/images/blog/sustainable-textiles.jpg',
+      alt: 'Sustainable Home Textiles',
+      width: 1200,
+      height: 800
+    },
     author: {
       id: 'author-2',
       name: 'Rahul Verma',
-      avatar: '/images/authors/rahul-verma.jpg',
+      email: 'rahul@example.com',
+      avatar: {
+        id: 'avatar-2',
+        url: '/images/authors/rahul-verma.jpg',
+        alt: 'Rahul Verma',
+        width: 200,
+        height: 200
+      },
       bio: 'Sustainability Expert',
-      role: 'Environmental Consultant',
+      title: 'Environmental Consultant',
+      expertise: ['Sustainability', 'Eco-Friendly Design', 'Green Building'],
+      credentials: ['MS Environmental Science'],
+      socialLinks: [],
+      stats: { totalPosts: 12, publishedPosts: 12, totalViews: 120000, totalLikes: 4200, totalComments: 450, totalShares: 650, averageRating: 4.3, followerCount: 4500, averageEngagementRate: 3.0, postsThisMonth: 1, postsThisYear: 12, firstPostDate: '2022-06-01T00:00:00Z', lastPostDate: '2025-01-08T14:30:00Z' },
+      isActive: true,
+      isGuest: false,
+      displayOrder: 2,
+      createdAt: '2022-06-01T00:00:00Z',
+      updatedAt: '2025-01-08T14:30:00Z',
     },
     category: {
       id: 'cat-2',
@@ -376,10 +413,10 @@ const MOCK_BLOG_POSTS: (BlogPostType & {
       color: '#10B981',
     },
     tags: [
-      { id: 'tag-5', name: 'eco-friendly', slug: 'eco-friendly' },
-      { id: 'tag-6', name: 'organic fabrics', slug: 'organic-fabrics' },
-      { id: 'tag-7', name: 'sustainable living', slug: 'sustainable-living' },
-      { id: 'tag-8', name: 'green home', slug: 'green-home' },
+      { id: 'tag-5', name: 'eco-friendly', slug: 'eco-friendly', postCount: 0, usageFrequency: 0, isPopular: true, isTrending: true, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-6', name: 'organic fabrics', slug: 'organic-fabrics', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-7', name: 'sustainable living', slug: 'sustainable-living', postCount: 0, usageFrequency: 0, isPopular: true, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-8', name: 'green home', slug: 'green-home', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
     ],
     publishedAt: '2025-01-08T14:30:00Z',
     updatedAt: '2025-01-08T14:30:00Z',
@@ -399,14 +436,35 @@ const MOCK_BLOG_POSTS: (BlogPostType & {
     slug: 'color-psychology-home-design',
     excerpt: 'Understand how colors influence emotions and behaviors in your living space. This comprehensive guide helps you choose the perfect color palette for every room.',
     content: '',
-    featuredImage: '/images/blog/color-psychology.jpg',
-    featuredImageAlt: 'Color Psychology in Home',
+    featuredImage: {
+      id: 'image-3',
+      url: '/images/blog/color-psychology.jpg',
+      alt: 'Color Psychology in Home',
+      width: 1200,
+      height: 800
+    },
     author: {
       id: 'author-3',
       name: 'Ananya Desai',
-      avatar: '/images/authors/ananya-desai.jpg',
+      email: 'ananya@example.com',
+      avatar: {
+        id: 'avatar-3',
+        url: '/images/authors/ananya-desai.jpg',
+        alt: 'Ananya Desai',
+        width: 200,
+        height: 200
+      },
       bio: 'Color Consultant & Designer',
-      role: 'Lead Color Specialist',
+      title: 'Lead Color Specialist',
+      expertise: ['Color Theory', 'Interior Design', 'Spatial Design'],
+      credentials: ['BFA Graphic Design', 'Color Certification'],
+      socialLinks: [],
+      stats: { totalPosts: 18, publishedPosts: 18, totalViews: 189200, totalLikes: 6200, totalComments: 620, totalShares: 950, averageRating: 4.6, followerCount: 6500, averageEngagementRate: 3.5, postsThisMonth: 2, postsThisYear: 18, firstPostDate: '2021-11-01T00:00:00Z', lastPostDate: '2025-01-05T09:15:00Z' },
+      isActive: true,
+      isGuest: false,
+      displayOrder: 3,
+      createdAt: '2021-11-01T00:00:00Z',
+      updatedAt: '2025-01-05T09:15:00Z',
     },
     category: {
       id: 'cat-3',
@@ -415,10 +473,10 @@ const MOCK_BLOG_POSTS: (BlogPostType & {
       color: '#8B5CF6',
     },
     tags: [
-      { id: 'tag-9', name: 'color theory', slug: 'color-theory' },
-      { id: 'tag-10', name: 'interior psychology', slug: 'interior-psychology' },
-      { id: 'tag-11', name: 'mood design', slug: 'mood-design' },
-      { id: 'tag-12', name: 'color palettes', slug: 'color-palettes' },
+      { id: 'tag-9', name: 'color theory', slug: 'color-theory', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-10', name: 'interior psychology', slug: 'interior-psychology', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-11', name: 'mood design', slug: 'mood-design', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-12', name: 'color palettes', slug: 'color-palettes', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
     ],
     publishedAt: '2025-01-05T09:15:00Z',
     updatedAt: '2025-01-05T09:15:00Z',
@@ -438,14 +496,35 @@ const MOCK_BLOG_POSTS: (BlogPostType & {
     slug: 'small-space-big-style-compact-living',
     excerpt: 'Transform your small apartment or compact room into a stylish and functional space with these expert tips and clever storage solutions.',
     content: '',
-    featuredImage: '/images/blog/small-space-design.jpg',
-    featuredImageAlt: 'Small Space Design',
+    featuredImage: {
+      id: 'image-4',
+      url: '/images/blog/small-space-design.jpg',
+      alt: 'Small Space Design',
+      width: 1200,
+      height: 800
+    },
     author: {
       id: 'author-1',
       name: 'Priya Sharma',
-      avatar: '/images/authors/priya-sharma.jpg',
+      email: 'priya@example.com',
+      avatar: {
+        id: 'avatar-1',
+        url: '/images/authors/priya-sharma.jpg',
+        alt: 'Priya Sharma',
+        width: 200,
+        height: 200
+      },
       bio: 'Interior Design Expert',
-      role: 'Senior Design Consultant',
+      title: 'Senior Design Consultant',
+      expertise: ['Interior Design', 'Modern Design', 'Home Decor'],
+      credentials: ['BS Interior Design'],
+      socialLinks: [],
+      stats: { totalPosts: 15, publishedPosts: 15, totalViews: 150000, totalLikes: 5000, totalComments: 500, totalShares: 800, averageRating: 4.5, followerCount: 5000, averageEngagementRate: 3.2, postsThisMonth: 2, postsThisYear: 15, firstPostDate: '2022-01-01T00:00:00Z', lastPostDate: '2025-01-10T10:00:00Z' },
+      isActive: true,
+      isGuest: false,
+      displayOrder: 1,
+      createdAt: '2022-01-01T00:00:00Z',
+      updatedAt: '2025-01-10T10:00:00Z',
     },
     category: {
       id: 'cat-1',
@@ -454,10 +533,10 @@ const MOCK_BLOG_POSTS: (BlogPostType & {
       color: '#3B82F6',
     },
     tags: [
-      { id: 'tag-13', name: 'small spaces', slug: 'small-spaces' },
-      { id: 'tag-14', name: 'apartment living', slug: 'apartment-living' },
-      { id: 'tag-15', name: 'storage solutions', slug: 'storage-solutions' },
-      { id: 'tag-16', name: 'space saving', slug: 'space-saving' },
+      { id: 'tag-13', name: 'small spaces', slug: 'small-spaces', postCount: 0, usageFrequency: 0, isPopular: true, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-14', name: 'apartment living', slug: 'apartment-living', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-15', name: 'storage solutions', slug: 'storage-solutions', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-16', name: 'space saving', slug: 'space-saving', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
     ],
     publishedAt: '2025-01-03T16:45:00Z',
     updatedAt: '2025-01-03T16:45:00Z',
@@ -477,14 +556,35 @@ const MOCK_BLOG_POSTS: (BlogPostType & {
     slug: 'layering-textiles-cozy-winter-homes',
     excerpt: 'Master the art of textile layering to create warm, inviting spaces during winter months. Learn about fabric combinations, textures, and seasonal styling.',
     content: '',
-    featuredImage: '/images/blog/winter-textiles.jpg',
-    featuredImageAlt: 'Winter Textiles',
+    featuredImage: {
+      id: 'image-5',
+      url: '/images/blog/winter-textiles.jpg',
+      alt: 'Winter Textiles',
+      width: 1200,
+      height: 800
+    },
     author: {
       id: 'author-4',
       name: 'Vikram Singh',
-      avatar: '/images/authors/vikram-singh.jpg',
+      email: 'vikram@example.com',
+      avatar: {
+        id: 'avatar-4',
+        url: '/images/authors/vikram-singh.jpg',
+        alt: 'Vikram Singh',
+        width: 200,
+        height: 200
+      },
       bio: 'Textile Designer',
-      role: 'Creative Director',
+      title: 'Creative Director',
+      expertise: ['Textile Design', 'Fabric Selection', 'Weaving'],
+      credentials: ['BFA Textile Design', 'Fashion Design Certification'],
+      socialLinks: [],
+      stats: { totalPosts: 10, publishedPosts: 10, totalViews: 98700, totalLikes: 3270, totalComments: 360, totalShares: 500, averageRating: 4.4, followerCount: 3800, averageEngagementRate: 2.8, postsThisMonth: 1, postsThisYear: 10, firstPostDate: '2023-01-01T00:00:00Z', lastPostDate: '2025-01-01T11:00:00Z' },
+      isActive: true,
+      isGuest: false,
+      displayOrder: 4,
+      createdAt: '2023-01-01T00:00:00Z',
+      updatedAt: '2025-01-01T11:00:00Z',
     },
     category: {
       id: 'cat-4',
@@ -493,10 +593,10 @@ const MOCK_BLOG_POSTS: (BlogPostType & {
       color: '#F59E0B',
     },
     tags: [
-      { id: 'tag-17', name: 'winter decor', slug: 'winter-decor' },
-      { id: 'tag-18', name: 'textile layering', slug: 'textile-layering' },
-      { id: 'tag-19', name: 'cozy home', slug: 'cozy-home' },
-      { id: 'tag-20', name: 'seasonal styling', slug: 'seasonal-styling' },
+      { id: 'tag-17', name: 'winter decor', slug: 'winter-decor', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-18', name: 'textile layering', slug: 'textile-layering', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-19', name: 'cozy home', slug: 'cozy-home', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-20', name: 'seasonal styling', slug: 'seasonal-styling', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
     ],
     publishedAt: '2025-01-01T11:00:00Z',
     updatedAt: '2025-01-01T11:00:00Z',
@@ -516,14 +616,35 @@ const MOCK_BLOG_POSTS: (BlogPostType & {
     slug: 'smart-home-integration-future-living',
     excerpt: 'Explore how smart home technology is revolutionizing the way we live. From automated lighting to AI-powered climate control, discover the possibilities.',
     content: '',
-    featuredImage: '/images/blog/smart-home.jpg',
-    featuredImageAlt: 'Smart Home Technology',
+    featuredImage: {
+      id: 'image-6',
+      url: '/images/blog/smart-home.jpg',
+      alt: 'Smart Home Technology',
+      width: 1200,
+      height: 800
+    },
     author: {
       id: 'author-5',
       name: 'Neha Kapoor',
-      avatar: '/images/authors/neha-kapoor.jpg',
+      email: 'neha@example.com',
+      avatar: {
+        id: 'avatar-5',
+        url: '/images/authors/neha-kapoor.jpg',
+        alt: 'Neha Kapoor',
+        width: 200,
+        height: 200
+      },
       bio: 'Smart Home Technology Expert',
-      role: 'Tech Consultant',
+      title: 'Tech Consultant',
+      expertise: ['Smart Home', 'IoT', 'Home Automation'],
+      credentials: ['BTech Electronics', 'IoT Specialist Certification'],
+      socialLinks: [],
+      stats: { totalPosts: 14, publishedPosts: 14, totalViews: 213400, totalLikes: 7850, totalComments: 810, totalShares: 1200, averageRating: 4.7, followerCount: 7500, averageEngagementRate: 3.8, postsThisMonth: 1, postsThisYear: 14, firstPostDate: '2021-12-01T00:00:00Z', lastPostDate: '2024-12-28T13:20:00Z' },
+      isActive: true,
+      isGuest: false,
+      displayOrder: 5,
+      createdAt: '2021-12-01T00:00:00Z',
+      updatedAt: '2024-12-28T13:20:00Z',
     },
     category: {
       id: 'cat-5',
@@ -532,10 +653,10 @@ const MOCK_BLOG_POSTS: (BlogPostType & {
       color: '#EF4444',
     },
     tags: [
-      { id: 'tag-21', name: 'smart home', slug: 'smart-home' },
-      { id: 'tag-22', name: 'home automation', slug: 'home-automation' },
-      { id: 'tag-23', name: 'IoT', slug: 'iot' },
-      { id: 'tag-24', name: 'future tech', slug: 'future-tech' },
+      { id: 'tag-21', name: 'smart home', slug: 'smart-home', postCount: 0, usageFrequency: 0, isPopular: true, isTrending: true, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-22', name: 'home automation', slug: 'home-automation', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: true, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-23', name: 'IoT', slug: 'iot', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+      { id: 'tag-24', name: 'future tech', slug: 'future-tech', postCount: 0, usageFrequency: 0, isPopular: false, isTrending: false, clickCount: 0, searchCount: 0, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
     ],
     publishedAt: '2024-12-28T13:20:00Z',
     updatedAt: '2024-12-28T13:20:00Z',
@@ -549,7 +670,7 @@ const MOCK_BLOG_POSTS: (BlogPostType & {
     isPremium: false,
     status: 'published',
   },
-];
+] as any[];
 
 const MOCK_CATEGORIES = [
   'All',
@@ -658,9 +779,9 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
   // ============================================================================
 
   // Internal state with proper typing - BlogPost type imported for type safety
-  const [posts, setPosts] = useState<BlogPostType[]>(customPosts || MOCK_BLOG_POSTS);
-  const [filteredPosts, setFilteredPosts] = useState<BlogPostType[]>(posts);
-  const [displayedPosts, setDisplayedPosts] = useState<BlogPostType[]>([]);
+  const [posts, setPosts] = useState<BlogPost[]>(customPosts || MOCK_BLOG_POSTS);
+  const [filteredPosts, setFilteredPosts] = useState<BlogPost[]>(posts);
+  const [displayedPosts, setDisplayedPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(externalLoading);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -713,14 +834,14 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
     // Apply predefined filter
     if (filter) {
       if (filter.category) {
-        result = result.filter(post => 
-          post.category.name.toLowerCase().includes(filter.category!.toLowerCase()) ||
-          post.category.slug.toLowerCase().includes(filter.category!.toLowerCase())
+        result = result.filter(post =>
+          post.categories?.[0]?.name.toLowerCase().includes(filter.category!.toLowerCase()) ||
+          post.categories?.[0]?.slug.toLowerCase().includes(filter.category!.toLowerCase())
         );
       }
       if (filter.tag) {
-        result = result.filter(post => 
-          post.tags.some(tag => 
+        result = result.filter(post =>
+          post.tags.some((tag: BlogTag) =>
             tag.name.toLowerCase().includes(filter.tag!.toLowerCase()) ||
             tag.slug.toLowerCase().includes(filter.tag!.toLowerCase())
           )
@@ -735,13 +856,13 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
         result = result.filter(post => post.status === filter.status);
       }
       if (filter.featured !== undefined) {
-        result = result.filter(post => post.isFeatured === filter.featured);
+        result = result.filter(post => post.settings?.isFeatured === filter.featured);
       }
       if (filter.trending !== undefined) {
         // Use views as a proxy for trending
         const trendingThreshold = 10000;
-        result = result.filter(post => 
-          filter.trending ? (post.views >= trendingThreshold) : (post.views < trendingThreshold)
+        result = result.filter(post =>
+          filter.trending ? ((post.engagement?.views ?? 0) >= trendingThreshold) : ((post.engagement?.views ?? 0) < trendingThreshold)
         );
       }
     }
@@ -753,54 +874,58 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
         post.title.toLowerCase().includes(query) ||
         post.excerpt.toLowerCase().includes(query) ||
         post.author.name.toLowerCase().includes(query) ||
-        post.category.name.toLowerCase().includes(query) ||
-        post.tags.some(tag => tag.name.toLowerCase().includes(query))
+        post.categories?.[0]?.name.toLowerCase().includes(query) ||
+        post.tags.some((tag: BlogTag) => tag.name.toLowerCase().includes(query))
       );
     }
 
     // Apply category filter
     if (selectedCategory !== 'All') {
       result = result.filter(post =>
-        post.category.name === selectedCategory
+        post.categories?.[0]?.name === selectedCategory
       );
     }
 
     // Apply tag filter
     if (selectedTags.length > 0) {
       result = result.filter(post =>
-        selectedTags.every(tagName => post.tags.some(tag => tag.name === tagName))
+        selectedTags.every(tagName => post.tags.some((tag: BlogTag) => tag.name === tagName))
       );
     }
 
     // Apply sorting
     switch (sortBy) {
       case 'latest':
-        result.sort((a, b) => 
-          new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-        );
+        result.sort((a, b) => {
+          const dateA = typeof a.publishedAt === 'string' ? new Date(a.publishedAt) : new Date();
+          const dateB = typeof b.publishedAt === 'string' ? new Date(b.publishedAt) : new Date();
+          return dateB.getTime() - dateA.getTime();
+        });
         break;
       case 'oldest':
-        result.sort((a, b) => 
-          new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime()
-        );
+        result.sort((a, b) => {
+          const dateA = typeof a.publishedAt === 'string' ? new Date(a.publishedAt) : new Date();
+          const dateB = typeof b.publishedAt === 'string' ? new Date(b.publishedAt) : new Date();
+          return dateA.getTime() - dateB.getTime();
+        });
         break;
       case 'popular':
-        result.sort((a, b) => (b.views || 0) - (a.views || 0));
+        result.sort((a, b) => (b.engagement?.views ?? 0) - (a.engagement?.views ?? 0));
         break;
       case 'trending':
         result.sort((a, b) => {
           // Sort by views as a proxy for trending
-          return (b.views || 0) - (a.views || 0);
+          return (b.engagement?.views ?? 0) - (a.engagement?.views ?? 0);
         });
         break;
       case 'most-liked':
-        result.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+        result.sort((a, b) => (b.engagement?.likes ?? 0) - (a.engagement?.likes ?? 0));
         break;
       case 'most-commented':
-        result.sort((a, b) => (b.comments || 0) - (a.comments || 0));
+        result.sort((a, b) => (b.engagement?.comments ?? 0) - (a.engagement?.comments ?? 0));
         break;
       case 'most-viewed':
-        result.sort((a, b) => (b.views || 0) - (a.views || 0));
+        result.sort((a, b) => (b.engagement?.views ?? 0) - (a.engagement?.views ?? 0));
         break;
       case 'alphabetical':
         result.sort((a, b) => a.title.localeCompare(b.title));
@@ -945,7 +1070,7 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
   /**
    * Handle post click
    */
-  const handlePostClick = useCallback((post: BlogPostType) => {
+  const handlePostClick = useCallback((post: BlogPost) => {
     onPostClick?.(post);
   }, [onPostClick]);
 
@@ -984,9 +1109,12 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
       if (post.id === postId) {
         return {
           ...post,
-          likes: likedPosts.has(postId) 
-            ? (post.likes || 0) - 1 
-            : (post.likes || 0) + 1,
+          engagement: {
+            ...post.engagement,
+            likes: likedPosts.has(postId)
+              ? (post.engagement?.likes ?? 0) - 1
+              : (post.engagement?.likes ?? 0) + 1,
+          },
         };
       }
       return post;
@@ -998,7 +1126,7 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
   /**
    * Handle share
    */
-  const handleShare = useCallback((post: BlogPostType) => {
+  const handleShare = useCallback((post: BlogPost) => {
     if (navigator.share) {
       navigator.share({
         title: post.title,
@@ -1278,7 +1406,7 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
   /**
    * Render blog post card with all features
    */
-  const renderPostCard = (post: BlogPostType, index: number) => {
+  const renderPostCard = (post: BlogPost, index: number) => {
     const isBookmarked = bookmarkedPosts.has(post.id);
     const isLiked = likedPosts.has(post.id);
 
@@ -1305,10 +1433,10 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
               viewMode === 'list' ? 'w-64 flex-shrink-0' : 'aspect-[16/9]'
             )}>
               <Image
-                src={post.featuredImage}
-                alt={post.featuredImageAlt || post.title}
-                width={1200}
-                height={675}
+                src={typeof post.featuredImage === 'string' ? post.featuredImage : post.featuredImage?.url || ''}
+                alt={typeof post.featuredImage === 'string' ? post.title : post.featuredImage?.alt || post.title}
+                width={typeof post.featuredImage === 'string' ? 1200 : post.featuredImage?.width || 1200}
+                height={typeof post.featuredImage === 'string' ? 675 : post.featuredImage?.height || 675}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
               
@@ -1316,7 +1444,7 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/20" />
               
               {/* Featured Badge */}
-              {showFeaturedBadge && post.isFeatured && (
+              {showFeaturedBadge && post.settings?.isFeatured && (
                 <Badge
                   variant="secondary"
                   className="absolute top-4 left-4 flex items-center gap-1 bg-blue-600 text-white"
@@ -1327,7 +1455,7 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
               )}
 
               {/* Trending Indicator - Based on views */}
-              {showTrendingIndicator && post.views >= 10000 && (
+              {showTrendingIndicator && (post.engagement?.views ?? 0) >= 10000 && (
                 <Badge
                   variant="destructive"
                   className="absolute top-4 right-4 flex items-center gap-1"
@@ -1349,15 +1477,15 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
             {/* Content */}
             <div className="p-6 flex flex-col flex-1">
               {/* Category */}
-              {showCategories && post.category && (
+              {showCategories && post.categories?.[0] && (
                 <div className="flex flex-wrap gap-2 mb-3">
-                  <Badge 
-                    key={post.category.id} 
-                    variant="secondary" 
+                  <Badge
+                    key={post.categories[0].id}
+                    variant="secondary"
                     className="text-xs"
-                    style={{ backgroundColor: post.category.color || '#6B7280' }}
+                    style={{ backgroundColor: post.categories[0].color || '#6B7280' }}
                   >
-                    {post.category.name}
+                    {post.categories[0].name}
                   </Badge>
                 </div>
               )}
@@ -1377,7 +1505,7 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
               {/* Tags */}
               {showTags && post.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {post.tags.slice(0, 3).map(tag => (
+                  {post.tags.slice(0, 3).map((tag: BlogTag) => (
                     <span
                       key={tag.id}
                       className="text-xs text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
@@ -1405,7 +1533,10 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
                         {post.author.name}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {formatDistanceToNow(new Date(post.publishedAt), { addSuffix: true })}
+                        {post.publishedAt && typeof post.publishedAt === 'string'
+                          ? formatDistanceToNow(new Date(post.publishedAt), { addSuffix: true })
+                          : 'Recently'
+                        }
                       </p>
                     </div>
                   </div>
@@ -1417,19 +1548,19 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
                     <Tooltip content="Views">
                       <div className="flex items-center gap-1">
                         <EyeIcon className="h-4 w-4" />
-                        {post.views ? (post.views / 1000).toFixed(1) + 'K' : 0}
+                        {post.engagement?.views ? (post.engagement.views / 1000).toFixed(1) + 'K' : 0}
                       </div>
                     </Tooltip>
                     <Tooltip content="Likes">
                       <div className="flex items-center gap-1">
                         <HeartIcon className="h-4 w-4" />
-                        {post.likes || 0}
+                        {post.engagement?.likes || 0}
                       </div>
                     </Tooltip>
                     <Tooltip content="Comments">
                       <div className="flex items-center gap-1">
                         <ChatBubbleLeftIcon className="h-4 w-4" />
-                        {post.comments || 0}
+                        {post.engagement?.comments || 0}
                       </div>
                     </Tooltip>
                   </div>

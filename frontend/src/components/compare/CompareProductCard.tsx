@@ -174,7 +174,9 @@ const getProductName = (product: ComparisonProduct): string => {
  * Get product brand
  */
 const getProductBrand = (product: ComparisonProduct): string | undefined => {
-  return product.product?.brand?.name;
+  const brand = product.product?.brand;
+  if (!brand) return undefined;
+  return typeof brand === 'string' ? brand : brand.name;
 };
 
 /**
@@ -303,14 +305,16 @@ const getQuickSpecs = (product: ComparisonProduct): Array<{ label: string; value
   }
   
   // GSM (for textiles)
-  const gsmSpec = product.product?.specifications?.find(s => 
-    s.name.toLowerCase().includes('gsm') || s.name.toLowerCase().includes('thread count')
-  );
-  if (gsmSpec) {
-    specs.push({
-      label: gsmSpec.name,
-      value: gsmSpec.value,
-    });
+  if (Array.isArray(product.product?.specifications)) {
+    const gsmSpec = product.product.specifications.find((s: any) =>
+      s.name.toLowerCase().includes('gsm') || s.name.toLowerCase().includes('thread count')
+    );
+    if (gsmSpec) {
+      specs.push({
+        label: gsmSpec.name,
+        value: gsmSpec.value,
+      });
+    }
   }
   
   return specs.slice(0, 3); // Limit to 3 specs

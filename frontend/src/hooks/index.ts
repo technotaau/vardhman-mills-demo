@@ -11,7 +11,7 @@ export { useWishlist } from './useWishlist';
 export type { WishlistItem, UseWishlistReturn } from './useWishlist';
 
 export { useAuth } from './auth/useAuth';
-export type { User, UseAuthReturn } from './auth/useAuth';
+export type { User } from './auth/useAuth';
 
 export { useToast } from './useToast';
 export type { ToastOptions } from './useToast';

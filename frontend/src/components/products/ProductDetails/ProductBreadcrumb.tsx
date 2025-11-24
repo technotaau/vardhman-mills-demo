@@ -54,8 +54,8 @@ const ProductBreadcrumb: React.FC<ProductBreadcrumbProps> = ({
 
   if (product.brand) {
     breadcrumbs.push({
-      label: product.brand.name,
-      href: `/brand/${product.brand.slug}`,
+      label: typeof product.brand === 'string' ? product.brand : product.brand.name,
+      href: `/brand/${typeof product.brand === 'string' ? product.brand.toLowerCase().replace(/\s+/g, '-') : product.brand.slug}`,
     });
   }
 

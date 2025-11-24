@@ -65,6 +65,8 @@ import type { FilterState, GridLayout, ProductSortOption } from '@/components/pr
 
 // Utils
 import { cn, formatCurrency } from '@/lib/utils';
+import { getProductPricing, getProductInventory } from '@/utils/productHelpers';
+import { adaptAPIProducts, ensureComponentProduct } from '@/utils/productAdapter';
 // API_ENDPOINTS available from constants if needed for future API integration
 
 // Icons
@@ -204,14 +206,16 @@ function ProductsPageContent({ initialProducts = [], initialTotal = 0 }: Product
     error,
   } = useInfiniteProducts({
     limit: PRODUCTS_PER_PAGE,
-    search: debouncedSearch || undefined,
+    ...(debouncedSearch && { q: debouncedSearch }),
     sortBy: sortBy as string,
-  });
+  } as any);
 
-  // Flatten all pages into a single products array
+  // Flatten all pages into a single products array and adapt to Component Product format
   const products = useMemo(() => {
     if (!data?.pages) return [];
-    return data.pages.flatMap(page => page.data || []);
+    const apiProducts = data.pages.flatMap(page => page.data || []);
+    // Convert API Products to Component Products for type compatibility
+    return adaptAPIProducts(apiProducts);
   }, [data]);
 
   // Get total count
@@ -227,14 +231,18 @@ function ProductsPageContent({ initialProducts = [], initialTotal = 0 }: Product
     switch (sort) {
       case 'price_asc':
         return sorted.sort((a, b) => {
-          const aPrice = a.pricing.salePrice?.amount || a.pricing.basePrice.amount;
-          const bPrice = b.pricing.salePrice?.amount || b.pricing.basePrice.amount;
+          const aPricing = getProductPricing(a);
+          const bPricing = getProductPricing(b);
+          const aPrice = aPricing?.salePrice?.amount || aPricing?.basePrice?.amount || 0;
+          const bPrice = bPricing?.salePrice?.amount || bPricing?.basePrice?.amount || 0;
           return aPrice - bPrice;
         });
       case 'price_desc':
         return sorted.sort((a, b) => {
-          const aPrice = a.pricing.salePrice?.amount || a.pricing.basePrice.amount;
-          const bPrice = b.pricing.salePrice?.amount || b.pricing.basePrice.amount;
+          const aPricing = getProductPricing(a);
+          const bPricing = getProductPricing(b);
+          const aPrice = aPricing?.salePrice?.amount || aPricing?.basePrice?.amount || 0;
+          const bPrice = bPricing?.salePrice?.amount || bPricing?.basePrice?.amount || 0;
           return bPrice - aPrice;
         });
       case 'name_asc':
@@ -273,7 +281,8 @@ function ProductsPageContent({ initialProducts = [], initialTotal = 0 }: Product
     // Price filter
     filtered = filtered.filter(
       p => {
-        const price = p.pricing?.salePrice?.amount || p.pricing?.basePrice?.amount || p.price || 0;
+        const pricing = getProductPricing(p);
+        const price = pricing?.salePrice?.amount || pricing?.basePrice?.amount || (p as any).price || 0;
         return price >= filters.priceRange.min && price <= filters.priceRange.max;
       }
     );
@@ -281,7 +290,7 @@ function ProductsPageContent({ initialProducts = [], initialTotal = 0 }: Product
     // Color filter
     if (filters.colors.length > 0) {
       filtered = filtered.filter(p => {
-        const productWithAttrs = p as ProductWithAttributes;
+        const productWithAttrs = p as unknown as ProductWithAttributes;
         const color = productWithAttrs.attributes?.color || productWithAttrs.color || '';
         return filters.colors.includes(color);
       });
@@ -290,7 +299,7 @@ function ProductsPageContent({ initialProducts = [], initialTotal = 0 }: Product
     // Size filter
     if (filters.sizes.length > 0) {
       filtered = filtered.filter(p => {
-        const productWithAttrs = p as ProductWithAttributes;
+        const productWithAttrs = p as unknown as ProductWithAttributes;
         const size = productWithAttrs.attributes?.size || productWithAttrs.size || '';
         return filters.sizes.includes(size);
       });
@@ -299,7 +308,7 @@ function ProductsPageContent({ initialProducts = [], initialTotal = 0 }: Product
     // Material filter
     if (filters.materials.length > 0) {
       filtered = filtered.filter(p => {
-        const productWithAttrs = p as ProductWithAttributes;
+        const productWithAttrs = p as unknown as ProductWithAttributes;
         const material = productWithAttrs.attributes?.material || productWithAttrs.material || '';
         return filters.materials.includes(material);
       });
@@ -308,7 +317,7 @@ function ProductsPageContent({ initialProducts = [], initialTotal = 0 }: Product
     // Brand filter
     if (filters.brandIds.length > 0) {
       filtered = filtered.filter(p => {
-        const productWithAttrs = p as ProductWithAttributes;
+        const productWithAttrs = p as unknown as ProductWithAttributes;
         const brand = productWithAttrs.attributes?.brand || productWithAttrs.brand || '';
         const brandId = typeof brand === 'string' ? brand : brand?.id || '';
         return filters.brandIds.includes(brandId);
@@ -325,16 +334,16 @@ function ProductsPageContent({ initialProducts = [], initialTotal = 0 }: Product
 
     // Availability filter
     if (filters.availability === 'in_stock') {
-      filtered = filtered.filter(p => p.inventory.isInStock !== false);
+      filtered = filtered.filter(p => getProductInventory(p)?.isInStock !== false);
     } else if (filters.availability === 'out_of_stock') {
-      filtered = filtered.filter(p => p.inventory.isInStock === false);
+      filtered = filtered.filter(p => getProductInventory(p)?.isInStock === false);
     }
 
     // Thread count filter
     if (filters.threadCount.min > 0 || filters.threadCount.max < 1000) {
       filtered = filtered.filter(
         p => {
-          const productWithAttrs = p as ProductWithAttributes;
+          const productWithAttrs = p as unknown as ProductWithAttributes;
           const threadCount = productWithAttrs.attributes?.threadCount || 0;
           return threadCount >= filters.threadCount.min && threadCount <= filters.threadCount.max;
         }

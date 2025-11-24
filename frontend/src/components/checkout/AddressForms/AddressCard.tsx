@@ -118,6 +118,7 @@ const getAddressTypeIcon = (type: UserAddress['type']) => {
 const getAddressTypeLabel = (type: UserAddress['type']): string => {
   const labels: Record<UserAddress['type'], string> = {
     home: 'Home',
+    work: 'Work',
     office: 'Office',
     apartment: 'Apartment',
     business: 'Business',

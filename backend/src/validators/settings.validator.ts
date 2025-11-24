@@ -6,7 +6,7 @@ import AppError from '../utils/appError.js';
 export const validationMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    const errorMessages = errors.array().map(error => error.msg).join(', ');
+    const errorMessages = errors.array().map((error: any) => error.msg).join(', ');
     return next(new AppError(errorMessages, 400));
   }
   next();
@@ -74,7 +74,7 @@ export const validateSettings = [
   body('settings')
     .isObject()
     .withMessage('Settings must be an object')
-    .custom((settings) => {
+    .custom((settings: Record<string, any>) => {
       // Validate each setting in the object
       for (const [key, value] of Object.entries(settings)) {
         if (typeof key !== 'string' || !key.match(/^[a-zA-Z0-9_-]+$/)) {
@@ -100,7 +100,7 @@ export const validateImportSettings = [
   body('settings')
     .isArray()
     .withMessage('Settings must be an array')
-    .custom((settings) => {
+    .custom((settings: any[]) => {
       for (let i = 0; i < settings.length; i++) {
         const setting = settings[i];
         

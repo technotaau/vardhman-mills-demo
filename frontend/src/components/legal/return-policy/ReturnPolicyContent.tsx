@@ -127,9 +127,9 @@ const ReturnPolicyContent: React.FC<ReturnPolicyContentProps> = ({
     // Simulated order date (in real app, you'd fetch this from API)
     const mockOrderDate = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
     const eligibility = getReturnEligibility(
-      mockOrderDate.toISOString(), 
-      selectedCategory, 
-      policyData
+      mockOrderDate.toISOString(),
+      selectedCategory,
+      policyData.returnCategories
     );
     
     setReturnEligibility({

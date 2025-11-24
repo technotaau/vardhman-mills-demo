@@ -585,7 +585,7 @@ export const WishlistItem: React.FC<WishlistItemProps> = ({
         
         {item.product.brand && (
           <p className="text-xs text-gray-600 font-medium">
-            {item.product.brand.name}
+            {typeof item.product.brand === 'string' ? item.product.brand : item.product.brand.name}
           </p>
         )}
       </div>

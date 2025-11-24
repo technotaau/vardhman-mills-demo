@@ -30,16 +30,20 @@ const ProductSpecs: React.FC<ProductSpecsProps> = ({
 
   function getAllGroupNames(): string[] {
     const groups: string[] = [];
-    
-    if (product.specifications && product.specifications.length > 0) {
-      product.specifications.forEach(spec => {
-        const groupName = spec.group || 'General';
-        if (!groups.includes(groupName)) {
-          groups.push(groupName);
-        }
-      });
+
+    if (product.specifications) {
+      if (Array.isArray(product.specifications) && product.specifications.length > 0) {
+        product.specifications.forEach(spec => {
+          const groupName = spec.group || 'General';
+          if (!groups.includes(groupName)) {
+            groups.push(groupName);
+          }
+        });
+      } else if (product.specifications instanceof Map) {
+        groups.push('General');
+      }
     }
-    
+
     return groups;
   }
 
@@ -55,27 +59,39 @@ const ProductSpecs: React.FC<ProductSpecsProps> = ({
 
   // Group specifications by category
   const groupedSpecs: SpecGroup[] = [];
-  
-  if (product.specifications && product.specifications.length > 0) {
-    const specsByCategory: Record<string, Array<{ label: string; value: string }>> = {};
-    
-    product.specifications.forEach(spec => {
-      const groupName = spec.group || 'General';
-      if (!specsByCategory[groupName]) {
-        specsByCategory[groupName] = [];
-      }
-      specsByCategory[groupName].push({
-        label: spec.name,
-        value: spec.value
+
+  if (product.specifications) {
+    if (Array.isArray(product.specifications) && product.specifications.length > 0) {
+      const specsByCategory: Record<string, Array<{ label: string; value: string }>> = {};
+
+      product.specifications.forEach(spec => {
+        const groupName = spec.group || 'General';
+        if (!specsByCategory[groupName]) {
+          specsByCategory[groupName] = [];
+        }
+        specsByCategory[groupName].push({
+          label: spec.name,
+          value: spec.value
+        });
       });
-    });
-    
-    Object.entries(specsByCategory).forEach(([category, specs]) => {
+
+      Object.entries(specsByCategory).forEach(([category, specs]) => {
+        groupedSpecs.push({
+          name: category,
+          specs
+        });
+      });
+    } else if (product.specifications instanceof Map && product.specifications.size > 0) {
+      // Handle Map<string, string> format
+      const specs: Array<{ label: string; value: string }> = [];
+      product.specifications.forEach((value, key) => {
+        specs.push({ label: key, value });
+      });
       groupedSpecs.push({
-        name: category,
+        name: 'General',
         specs
       });
-    });
+    }
   }
 
   // Add additional specs from product properties
@@ -89,7 +105,10 @@ const ProductSpecs: React.FC<ProductSpecsProps> = ({
   }
 
   if (product.brand) {
-    additionalSpecs.specs.push({ label: 'Brand', value: product.brand.name });
+    additionalSpecs.specs.push({
+      label: 'Brand',
+      value: typeof product.brand === 'string' ? product.brand : product.brand.name
+    });
   }
 
   if (product.dimensions) {

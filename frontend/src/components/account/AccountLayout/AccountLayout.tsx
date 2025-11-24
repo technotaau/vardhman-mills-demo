@@ -237,7 +237,7 @@ export const AccountLayout: React.FC<AccountLayoutProps> = ({
 
   // Verification check
   useEffect(() => {
-    if (pageConfig.requiresVerification && user && !user.isEmailVerified) {
+    if (pageConfig.requiresVerification && user && !user.emailVerified) {
       setShowVerificationPrompt(true);
     }
   }, [pageConfig.requiresVerification, user]);

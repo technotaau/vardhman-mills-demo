@@ -249,7 +249,7 @@ const UserMenu: React.FC<UserMenuProps> = ({
           )}
           
           {/* Verification Badge */}
-          {user?.isVerified && (
+          {user?.emailVerified && (
             <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-900 flex items-center justify-center">
               <ShieldCheckIcon className="w-2 h-2 text-white" />
             </div>
@@ -299,7 +299,7 @@ const UserMenu: React.FC<UserMenuProps> = ({
                       </div>
                     )}
                   </div>
-                  {user?.isVerified && (
+                  {user?.emailVerified && (
                     <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center">
                       <ShieldCheckIcon className="w-2.5 h-2.5 text-white" />
                     </div>

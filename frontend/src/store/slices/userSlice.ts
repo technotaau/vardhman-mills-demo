@@ -14,7 +14,7 @@ export interface UserProfile {
   gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
   avatar?: string;
   createdAt: string;
-  
+
   // Additional profile properties
   addresses: Address[];
   preferences: UserPreferences;
@@ -22,6 +22,11 @@ export interface UserProfile {
   activityLog: ActivityLogEntry[];
   paymentMethods: PaymentMethod[];
   subscriptions: Subscription[];
+  loyaltyProgram?: {
+    points: number;
+    tier: 'bronze' | 'silver' | 'gold' | 'platinum';
+    rewards?: any[];
+  };
 }
 
 // Address interface

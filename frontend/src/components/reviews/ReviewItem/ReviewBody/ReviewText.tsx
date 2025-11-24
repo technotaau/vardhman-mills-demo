@@ -276,13 +276,22 @@ const ReviewText: React.FC<ReviewTextProps> = ({
   const selectionRef = useRef<Selection | null>(null);
 
   // Hooks
-  const [,] = useLocalStorage('review-text-prefs', {
-    fontSize,
-    fontFamily,
-    lineHeight,
-    theme,
-    dyslexiaMode,
-    autoExpand: false
+  const { value: textPrefs, setValue: setTextPrefs } = useLocalStorage<{
+    fontSize: typeof fontSize;
+    fontFamily: typeof fontFamily;
+    lineHeight: typeof lineHeight;
+    theme: typeof theme;
+    dyslexiaMode: boolean;
+    autoExpand: boolean;
+  }>('review-text-prefs', {
+    defaultValue: {
+      fontSize,
+      fontFamily,
+      lineHeight,
+      theme,
+      dyslexiaMode,
+      autoExpand: false
+    }
   });
 
   const debouncedSearch = useDebounce(searchQuery, 300);

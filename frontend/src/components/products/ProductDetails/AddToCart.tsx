@@ -2,16 +2,16 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ShoppingCart, 
-  Check, 
-  Loader2, 
-  Package, 
+import {
+  ShoppingCart,
+  Check,
+  Loader2,
+  Package,
   AlertCircle,
   TrendingUp,
   Clock
 } from 'lucide-react';
-import { Product, ProductVariant } from '@/types/product.types';
+import { Product, ProductVariant, BackendProductVariant } from '@/types/product.types';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { useAddToCart } from '@/hooks/cart/useAddToCart';
@@ -20,7 +20,7 @@ import { toast } from 'react-hot-toast';
 
 export interface AddToCartProps {
   product: Product;
-  selectedVariant?: ProductVariant;
+  selectedVariant?: ProductVariant | BackendProductVariant;
   quantity?: number;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
@@ -52,10 +52,19 @@ const AddToCart: React.FC<AddToCartProps> = ({
 
   const quantity = externalQuantity ?? internalQuantity;
 
-  // Get stock info
+  // Get stock info - handle both variant types
   const stockInfo = useMemo(() => {
     if (selectedVariant) {
-      return selectedVariant.inventory;
+      if ('inventory' in selectedVariant) {
+        return selectedVariant.inventory;
+      } else if ('stock' in selectedVariant) {
+        // Convert BackendProductVariant stock to StockInfo format
+        return {
+          isInStock: selectedVariant.stock > 0 && selectedVariant.isActive,
+          quantity: selectedVariant.stock,
+          isLowStock: selectedVariant.stock > 0 && selectedVariant.stock <= 10
+        };
+      }
     }
     return product.inventory;
   }, [product, selectedVariant]);
@@ -64,15 +73,25 @@ const AddToCart: React.FC<AddToCartProps> = ({
   const lowStock = availableStock > 0 && availableStock <= 10;
   const outOfStock = availableStock <= 0;
 
-  // Get pricing
+  // Get pricing - handle both variant types
   const pricing = useMemo(() => {
-    if (selectedVariant?.pricing) {
-      return selectedVariant.pricing;
+    if (selectedVariant) {
+      if ('pricing' in selectedVariant && selectedVariant.pricing) {
+        return selectedVariant.pricing;
+      } else if ('price' in selectedVariant) {
+        // Convert BackendProductVariant price to ProductPricing format
+        return {
+          basePrice: { amount: selectedVariant.price, currency: 'INR' },
+          salePrice: selectedVariant.comparePrice ? { amount: selectedVariant.comparePrice, currency: 'INR' } : undefined,
+          isDynamicPricing: false,
+          taxable: true
+        };
+      }
     }
     return product.pricing;
   }, [product, selectedVariant]);
 
-  const currentPrice = pricing.salePrice?.amount ?? pricing.basePrice.amount;
+  const currentPrice = pricing?.salePrice?.amount ?? pricing?.basePrice?.amount ?? 0;
 
   useEffect(() => {
     if (showSuccess) {
@@ -95,8 +114,13 @@ const AddToCart: React.FC<AddToCartProps> = ({
     if (outOfStock || disabled) return;
 
     try {
+      // Get variant ID - handle both variant types
+      const variantId = selectedVariant
+        ? ('id' in selectedVariant ? selectedVariant.id : selectedVariant._id)
+        : undefined;
+
       await addToCart(product.id, quantity, {
-        variantId: selectedVariant?.id,
+        variantId,
       });
 
       setShowSuccess(true);
@@ -112,8 +136,13 @@ const AddToCart: React.FC<AddToCartProps> = ({
     if (outOfStock || disabled) return;
 
     try {
+      // Get variant ID - handle both variant types
+      const variantId = selectedVariant
+        ? ('id' in selectedVariant ? selectedVariant.id : selectedVariant._id)
+        : undefined;
+
       await addToCart(product.id, quantity, {
-        variantId: selectedVariant?.id,
+        variantId,
       });
 
       router.push('/checkout');
@@ -236,11 +265,11 @@ const AddToCart: React.FC<AddToCartProps> = ({
             ₹{(currentPrice * quantity).toLocaleString('en-IN')}
           </p>
         </div>
-        {pricing.salePrice && (
+        {pricing?.salePrice && (
           <div className="text-right">
             <p className="text-sm text-gray-600">You Save</p>
             <p className="text-lg font-semibold text-green-600">
-              ₹{((pricing.basePrice.amount - currentPrice) * quantity).toLocaleString('en-IN')}
+              ₹{(((pricing?.basePrice?.amount ?? 0) - currentPrice) * quantity).toLocaleString('en-IN')}
             </p>
           </div>
         )}
@@ -320,7 +349,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
           <Check className="h-3 w-3 text-green-600" />
           <span>Easy Returns</span>
         </div>
-        {pricing.salePrice && (
+        {pricing?.salePrice && (
           <div className="flex items-center gap-1">
             <Check className="h-3 w-3 text-green-600" />
             <span>Best Price Guaranteed</span>

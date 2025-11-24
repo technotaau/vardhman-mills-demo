@@ -31,7 +31,7 @@ const ProductDescription: React.FC<ProductDescriptionProps> = ({
     ? description.substring(0, maxLength) + '...'
     : description;
 
-  const hasContent = description || shortDescription || product.features?.length > 0;
+  const hasContent = description || shortDescription || (product.features?.length ?? 0) > 0;
 
   if (!hasContent) {
     return (

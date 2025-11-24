@@ -1279,36 +1279,15 @@ const ReplyList: React.FC<ReplyListProps> = ({
                 createdAt={reply.createdAt?.toISOString() || new Date().toISOString()}
                 updatedAt={reply.updatedAt?.toISOString()}
                 isEdited={reply.isEdited || false}
-                isAuthor={reply.author.id === currentUserId}
                 isPinned={reply.isPinned || false}
                 isHighlighted={false}
                 likes={reply.likes || 0}
                 dislikes={reply.dislikes || 0}
-                userReaction={reply.userVote || null}
+                isLiked={reply.userVote === 'like'}
+                isDisliked={reply.userVote === 'dislike'}
                 replies={[]} // Handle nested replies separately to avoid type conflicts
-                replyCount={reply.replies?.length || 0}
-                attachments={reply.attachments?.map(att => ({
-                  id: att.id,
-                  type: att.type === 'audio' ? 'document' : att.type as 'image' | 'video' | 'document' | 'link',
-                  url: att.url,
-                  name: att.name,
-                  size: att.size
-                }))}
-                mentions={reply.mentions?.map((mention, index) => ({
-                  id: `mention-${index}`,
-                  displayName: mention,
-                  position: [0, mention.length] as [number, number]
-                }))}
-                hashtags={reply.tags}
-                showHeader={showAuthorInfo}
-                showTimestamp={showTimestamps}
-                showActions={true}
-                showReplies={showReplies && (reply.replies?.length || 0) > 0}
-                variant={maxDepth && 0 > maxDepth ? 'compact' : 'default'}
-                size="md"
-                depth={0}
+                currentDepth={0}
                 maxDepth={maxDepth || 3}
-                interactive={true}
                 onLike={() => handleVote(reply.id, 'like')}
                 onDislike={() => handleVote(reply.id, 'dislike')}
                 onReply={(replyId, content) => {
@@ -1350,7 +1329,6 @@ const ReplyList: React.FC<ReplyListProps> = ({
                     handleDelete(reply);
                   }
                 }}
-                onShare={() => showSharing && handleShare(reply)}
                 onReport={() => {
                   if (canFlag) {
                     handleFlag(reply);
@@ -1359,9 +1337,6 @@ const ReplyList: React.FC<ReplyListProps> = ({
                 onUserClick={(user) => {
                   // Handle user profile navigation
                   console.log('User clicked:', user);
-                }}
-                onAnalyticsEvent={(event, data) => {
-                  console.log('Analytics event:', event, data);
                 }}
               />
             ))}

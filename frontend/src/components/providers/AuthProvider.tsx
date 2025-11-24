@@ -37,6 +37,13 @@ export interface User {
   addresses: Address[];
   orders: string[];
   wishlist: string[];
+  orderCount?: number; // Total orders placed
+  memberSince?: string; // Member since date
+  privacySettings?: { // Privacy settings (for compatibility)
+    showEmail?: boolean;
+    showPhone?: boolean;
+    [key: string]: any;
+  };
   cart: string[];
   lastLoginAt: string;
   createdAt: string;

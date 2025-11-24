@@ -4,13 +4,13 @@ import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Package, Shield, Truck, Award, Tag } from 'lucide-react';
-import { Product, ProductVariant } from '@/types/product.types';
+import { Product, ProductVariant, BackendProductVariant } from '@/types/product.types';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/Badge';
 
 export interface ProductInfoProps {
   product: Product;
-  selectedVariant?: ProductVariant;
+  selectedVariant?: ProductVariant | BackendProductVariant;
   className?: string;
   showBrand?: boolean;
   showSKU?: boolean;
@@ -28,12 +28,21 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   showBadges = true,
 }) => {
   const sku = selectedVariant?.sku || product.sku;
-  const inStock = selectedVariant?.inventory?.isInStock !== undefined 
-    ? selectedVariant.inventory.isInStock 
-    : product.inventory.isInStock;
+
+  // Handle stock status for both variant types
+  let inStock: boolean | undefined;
+  if (selectedVariant) {
+    if ('inventory' in selectedVariant) {
+      inStock = selectedVariant.inventory?.isInStock;
+    } else if ('stock' in selectedVariant) {
+      inStock = selectedVariant.stock > 0 && selectedVariant.isActive;
+    }
+  } else {
+    inStock = product.inventory?.isInStock;
+  }
 
   // Check if product has sale price
-  const isOnSale = !!product.pricing.salePrice;
+  const isOnSale = !!product.pricing?.salePrice;
 
   const getBadges = () => {
     const badges: Array<{ label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon?: React.ReactNode }> = [];
@@ -97,11 +106,11 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         >
           {showBrand && product.brand && (
             <Link
-              href={`/brands/${product.brand.slug}`}
+              href={`/brands/${typeof product.brand === 'string' ? product.brand.toLowerCase().replace(/\s+/g, '-') : product.brand.slug}`}
               className="flex items-center gap-2 hover:text-primary-600 transition-colors"
             >
               <span className="font-medium">Brand:</span>
-              <span className="underline">{product.brand.name}</span>
+              <span className="underline">{typeof product.brand === 'string' ? product.brand : product.brand.name}</span>
             </Link>
           )}
           

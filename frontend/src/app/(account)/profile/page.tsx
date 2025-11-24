@@ -295,7 +295,7 @@ export default function ProfilePage() {
 
   // Computed values
   const isProfileComplete = useMemo(() => state.profileCompletion === 100, [state.profileCompletion]);
-  const isVerified = useMemo(() => user?.isEmailVerified || false, [user?.isEmailVerified]);
+  const isVerified = useMemo(() => user?.emailVerified || false, [user?.emailVerified]);
 
   // Render functions
   const renderHeader = () => (

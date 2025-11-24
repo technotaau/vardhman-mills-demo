@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { Product, ProductVariant } from '@/types/product.types';
+import { Product, ProductVariant, ImageAsset } from '@/types/product.types';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight, Play, Volume2, VolumeX, Maximize2, ZoomIn } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
@@ -37,16 +37,21 @@ export const ProductImages: React.FC<ProductImagesProps> = ({
   sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw',
 }) => {
   // Handle both backend and frontend image structures
-  const getImages = () => {
+  const getImages = (): ImageAsset[] | Array<{ url: string; alt: string }> => {
     // Check variant first
     if (variant?.media?.images) return variant.media.images;
-    if (variant?.images) return variant.images.map(url => ({ url, alt: product.name }));
-    
+    // Type guard for BackendProductVariant with images property
+    if (variant && 'images' in variant && Array.isArray(variant.images) && variant.images.length > 0) {
+      return variant.images.map((url: string) => ({ url, alt: product.name }));
+    }
+
     // Check product
     if (product.media?.images) return product.media.images;
-    if (product.images) return product.images.map(url => ({ url, alt: product.name }));
+    if (product.images && Array.isArray(product.images)) {
+      return product.images.map((url: string) => ({ url, alt: product.name }));
+    }
     if (product.image) return [{ url: product.image, alt: product.name }];
-    
+
     return [];
   };
   
@@ -60,8 +65,8 @@ export const ProductImages: React.FC<ProductImagesProps> = ({
   const videos = getVideos();
   
   const allMedia = [
-    ...images.map(img => ({ 
-      ...img, 
+    ...images.map((img: ImageAsset | { url: string; alt: string }) => ({
+      ...img,
       type: 'image' as const,
       url: typeof img === 'string' ? img : img.url,
       alt: typeof img === 'string' ? product.name : (img.alt || product.name)

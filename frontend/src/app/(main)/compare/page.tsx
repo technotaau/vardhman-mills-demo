@@ -53,6 +53,11 @@ import type { Product } from '@/types';
 import type { ComparisonProduct } from '@/types/compare.types';
 import { cn, formatCurrency } from '@/lib/utils';
 import {
+  getProductPricing,
+  getProductInventory,
+  getProductRating,
+} from '@/utils/productHelpers';
+import {
   XMarkIcon,
   PlusIcon,
   PrinterIcon,
@@ -141,9 +146,9 @@ export default function ComparePage() {
       isHighlighted: false,
       isFavorite,
       comparisonContext: {
-        priceAtComparison: product.pricing.basePrice,
-        availabilityAtComparison: product.inventory.isInStock ? 'In Stock' : 'Out of Stock',
-        ratingAtComparison: product.rating,
+        priceAtComparison: getProductPricing(product)?.basePrice || { amount: 0, currency: 'INR', formatted: '₹0' },
+        availabilityAtComparison: getProductInventory(product)?.isInStock ? 'In Stock' : 'Out of Stock',
+        ratingAtComparison: getProductRating(product) || { average: 0, count: 0, distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } },
       },
     };
 

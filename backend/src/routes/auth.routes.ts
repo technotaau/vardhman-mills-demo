@@ -7,6 +7,7 @@ import {
   resetPassword,
   verifyEmail,
   updatePassword,
+  refreshAccessToken,
   googleAuth,
   facebookAuth
 } from '../controllers/auth.controller.js';
@@ -21,6 +22,7 @@ router.post('/logout', logout);
 router.post('/forgot-password', validate(forgotPasswordSchema), forgotPassword);
 router.post('/reset-password', validate(resetPasswordSchema), resetPassword);
 router.get('/verify-email/:token', verifyEmail);
+router.post('/refresh', refreshAccessToken); // Refresh access token using refresh token
 
 // Social auth routes
 router.post('/google', googleAuth);

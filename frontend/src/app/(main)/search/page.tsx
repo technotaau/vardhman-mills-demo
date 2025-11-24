@@ -71,6 +71,11 @@ import type { Product } from '@/types';
 
 // Utils
 import { cn } from '@/lib/utils';
+import {
+  getProductPricing,
+  getProductInventory,
+  getProductRating,
+} from '@/utils/productHelpers';
 
 // Types
 interface SearchFilters {
@@ -395,45 +400,52 @@ function SearchPageContent() {
 
     // Apply price filter
     filtered = filtered.filter(product => {
-      const price = product.pricing.salePrice?.amount || product.pricing.basePrice.amount;
-      return price >= searchState.filters.priceRange.min && 
+      const pricing = getProductPricing(product);
+      const price = pricing?.salePrice?.amount || pricing?.basePrice?.amount || 0;
+      return price >= searchState.filters.priceRange.min &&
              price <= searchState.filters.priceRange.max;
     });
 
     // Apply rating filter
     if (searchState.filters.ratings.length > 0) {
       filtered = filtered.filter(product => {
-        return searchState.filters.ratings.some(r => product.rating.average >= r);
+        const rating = getProductRating(product);
+        return searchState.filters.ratings.some(r => (rating?.average || 0) >= r);
       });
     }
 
     // Apply availability filter
     if (searchState.filters.availability !== 'all') {
       filtered = filtered.filter(product => {
-        if (searchState.filters.availability === 'in-stock') return product.inventory.isInStock;
-        if (searchState.filters.availability === 'out-of-stock') return !product.inventory.isInStock;
+        const inventory = getProductInventory(product);
+        if (searchState.filters.availability === 'in-stock') return inventory?.isInStock || false;
+        if (searchState.filters.availability === 'out-of-stock') return !(inventory?.isInStock || false);
         return true;
       });
     }
 
     // Apply on sale filter
     if (searchState.filters.onSale) {
-      filtered = filtered.filter(product => !!product.pricing.salePrice);
+      filtered = filtered.filter(product => !!getProductPricing(product)?.salePrice);
     }
 
     // Apply sorting
     filtered.sort((a, b) => {
       switch (searchState.sortBy) {
         case 'price-low':
-          return (a.pricing.salePrice?.amount || a.pricing.basePrice.amount) - (b.pricing.salePrice?.amount || b.pricing.basePrice.amount);
+          const priceA = getProductPricing(a)?.salePrice?.amount || getProductPricing(a)?.basePrice?.amount || 0;
+          const priceB = getProductPricing(b)?.salePrice?.amount || getProductPricing(b)?.basePrice?.amount || 0;
+          return priceA - priceB;
         case 'price-high':
-          return (b.pricing.salePrice?.amount || b.pricing.basePrice.amount) - (a.pricing.salePrice?.amount || a.pricing.basePrice.amount);
+          const priceHighA = getProductPricing(a)?.salePrice?.amount || getProductPricing(a)?.basePrice?.amount || 0;
+          const priceHighB = getProductPricing(b)?.salePrice?.amount || getProductPricing(b)?.basePrice?.amount || 0;
+          return priceHighB - priceHighA;
         case 'name-az':
           return a.name.localeCompare(b.name);
         case 'name-za':
           return b.name.localeCompare(a.name);
         case 'rating':
-          return b.rating.average - a.rating.average;
+          return (getProductRating(b)?.average || 0) - (getProductRating(a)?.average || 0);
         case 'newest':
           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         default:
@@ -551,13 +563,17 @@ function SearchPageContent() {
   }, [searchState.query, toast]);
 
   const handleExportResults = useCallback(() => {
-    const data = filteredResults.map(product => ({
-      name: product.name,
-      sku: product.sku,
-      price: product.pricing.salePrice?.formatted || product.pricing.basePrice.formatted,
-      category: typeof product.category === 'string' ? product.category : product.category.name,
-      stock: product.inventory.isInStock ? 'In Stock' : 'Out of Stock',
-    }));
+    const data = filteredResults.map(product => {
+      const pricing = getProductPricing(product);
+      const inventory = getProductInventory(product);
+      return {
+        name: product.name,
+        sku: product.sku || '',
+        price: pricing?.salePrice?.formatted || pricing?.basePrice?.formatted || '₹0',
+        category: typeof product.category === 'string' ? product.category : product.category?.name || '',
+        stock: inventory?.isInStock ? 'In Stock' : 'Out of Stock',
+      };
+    });
 
     const csv = [
       ['Name', 'SKU', 'Price', 'Category', 'Stock'],

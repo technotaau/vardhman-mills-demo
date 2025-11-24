@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Product, ProductVariant } from '@/types/product.types';
+import { Product, ProductVariant, BackendProductVariant } from '@/types/product.types';
 import { cn } from '@/lib/utils';
 
 // Import all subcomponents
@@ -33,14 +33,25 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   relatedProducts = [],
   className,
 }) => {
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | BackendProductVariant | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [quantity, setQuantity] = useState(1);
+
+  // Helper function to check if variant is available (works for both types)
+  const isVariantAvailable = (variant: ProductVariant | BackendProductVariant): boolean => {
+    if ('inventory' in variant) {
+      // ProductVariant
+      return variant.inventory.isInStock;
+    } else {
+      // BackendProductVariant
+      return variant.stock > 0 && variant.isActive;
+    }
+  };
 
   // Auto-select first variant if available
   useEffect(() => {
     if (product.variants && product.variants.length > 0 && !selectedVariant) {
-      const firstAvailable = product.variants.find(v => v.inventory.isInStock);
+      const firstAvailable = product.variants.find(v => isVariantAvailable(v));
       if (firstAvailable) {
         setSelectedVariant(firstAvailable);
       }

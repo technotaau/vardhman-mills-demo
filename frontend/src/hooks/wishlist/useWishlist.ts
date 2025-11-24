@@ -9,6 +9,9 @@ export interface WishlistItem {
   variantId?: string;
   userId: string;
   addedAt: string;
+  priceWhenAdded?: number; // Track original price when added
+  notifyOnPriceDrop?: boolean; // Price drop alert preference
+  notifyOnStock?: boolean; // Stock alert preference
   product: {
     id: string;
     name: string;
@@ -26,6 +29,7 @@ export interface WishlistItem {
     reviewCount?: number;
     tags?: string[];
     features?: string[];
+    sku?: string; // Added for compatibility with wishlist page
   };
   variant?: {
     id: string;

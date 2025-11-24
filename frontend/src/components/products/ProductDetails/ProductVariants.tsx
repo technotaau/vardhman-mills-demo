@@ -4,14 +4,14 @@ import React, { useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Check, AlertCircle } from 'lucide-react';
-import { Product, ProductVariant } from '@/types/product.types';
+import { Product, ProductVariant, BackendProductVariant } from '@/types/product.types';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/Badge';
 
 export interface ProductVariantsProps {
   product: Product;
-  selectedVariant: ProductVariant | null;
-  onVariantChange: (variant: ProductVariant) => void;
+  selectedVariant: ProductVariant | BackendProductVariant | null;
+  onVariantChange: (variant: ProductVariant | BackendProductVariant) => void;
   className?: string;
 }
 
@@ -23,10 +23,48 @@ const ProductVariants: React.FC<ProductVariantsProps> = ({
 }) => {
   const variants = React.useMemo(() => product.variants || [], [product.variants]);
 
+  // Helper functions to handle both variant types
+  const isVariantAvailable = (variant: ProductVariant | BackendProductVariant): boolean => {
+    if ('inventory' in variant) {
+      return variant.inventory.isInStock;
+    } else {
+      return variant.stock > 0 && variant.isActive;
+    }
+  };
+
+  const isVariantLowStock = (variant: ProductVariant | BackendProductVariant): boolean => {
+    if ('inventory' in variant) {
+      return variant.inventory.isLowStock || false;
+    } else {
+      return variant.stock > 0 && variant.stock <= 10;
+    }
+  };
+
+  const getVariantId = (variant: ProductVariant | BackendProductVariant): string => {
+    if ('id' in variant) {
+      return variant.id;
+    } else {
+      return variant._id || variant.sku;
+    }
+  };
+
+  const getVariantName = (variant: ProductVariant | BackendProductVariant): string => {
+    if ('name' in variant) {
+      return variant.name;
+    } else {
+      // Construct name from BackendProductVariant properties
+      const parts = [];
+      if (variant.color) parts.push(variant.color);
+      if (variant.size) parts.push(variant.size);
+      if (variant.material) parts.push(variant.material);
+      return parts.length > 0 ? parts.join(' / ') : variant.sku;
+    }
+  };
+
   // Auto-select first available variant if none selected
   useEffect(() => {
     if (!selectedVariant && variants.length > 0) {
-      const firstAvailable = variants.find(v => v.inventory.isInStock);
+      const firstAvailable = variants.find(v => isVariantAvailable(v));
       if (firstAvailable) {
         onVariantChange(firstAvailable);
       }
@@ -37,11 +75,20 @@ const ProductVariants: React.FC<ProductVariantsProps> = ({
     return null;
   }
 
-  const getPriceDifference = (variant: ProductVariant) => {
-    const basePrice = product.pricing.basePrice.amount;
-    const variantPrice = variant.pricing?.basePrice.amount || basePrice;
+  const getPriceDifference = (variant: ProductVariant | BackendProductVariant) => {
+    const basePrice = product.pricing?.basePrice?.amount ?? product.price ?? 0;
+    let variantPrice: number;
+
+    if ('pricing' in variant && variant.pricing) {
+      variantPrice = variant.pricing.basePrice?.amount ?? basePrice;
+    } else if ('price' in variant) {
+      variantPrice = variant.price;
+    } else {
+      variantPrice = basePrice;
+    }
+
     const diff = variantPrice - basePrice;
-    
+
     if (diff === 0) return null;
     return diff > 0 ? `+${diff}` : `${diff}`;
   };
@@ -53,7 +100,7 @@ const ProductVariants: React.FC<ProductVariantsProps> = ({
           Select Variant
           {selectedVariant && (
             <span className="ml-2 text-gray-600 font-normal">
-              {selectedVariant.name}
+              {getVariantName(selectedVariant)}
             </span>
           )}
         </h3>
@@ -61,14 +108,24 @@ const ProductVariants: React.FC<ProductVariantsProps> = ({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {variants.map((variant) => {
-          const isSelected = selectedVariant?.id === variant.id;
-          const isAvailable = variant.inventory.isInStock;
-          const isLowStock = variant.inventory.isLowStock;
+          const variantId = getVariantId(variant);
+          const variantName = getVariantName(variant);
+          const isSelected = selectedVariant ? getVariantId(selectedVariant) === variantId : false;
+          const isAvailable = isVariantAvailable(variant);
+          const isLowStock = isVariantLowStock(variant);
           const priceDiff = getPriceDifference(variant);
+
+          // Get variant image
+          let variantImage: { url: string; alt: string } | null = null;
+          if ('media' in variant && variant.media?.primaryImage) {
+            variantImage = variant.media.primaryImage;
+          } else if ('images' in variant && variant.images && variant.images.length > 0) {
+            variantImage = { url: variant.images[0], alt: variantName };
+          }
 
           return (
             <button
-              key={variant.id}
+              key={variantId}
               onClick={() => isAvailable && onVariantChange(variant)}
               disabled={!isAvailable}
               className={cn(
@@ -82,11 +139,11 @@ const ProductVariants: React.FC<ProductVariantsProps> = ({
               )}
             >
               {/* Variant Image */}
-              {variant.media?.primaryImage && (
+              {variantImage && (
                 <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
                   <Image
-                    src={variant.media.primaryImage.url}
-                    alt={variant.media.primaryImage.alt || variant.name}
+                    src={variantImage.url}
+                    alt={variantImage.alt}
                     fill
                     className="object-cover"
                   />
@@ -97,7 +154,7 @@ const ProductVariants: React.FC<ProductVariantsProps> = ({
               <div className="flex-1 min-w-0 space-y-1">
                 <div className="flex items-start justify-between gap-2">
                   <h4 className="font-medium text-gray-900 truncate">
-                    {variant.name}
+                    {variantName}
                   </h4>
                   {isSelected && (
                     <motion.div
@@ -157,15 +214,24 @@ const ProductVariants: React.FC<ProductVariantsProps> = ({
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div className="text-primary-700">SKU:</div>
             <div className="text-primary-900 font-medium">{selectedVariant.sku}</div>
-            
-            {selectedVariant.inventory.quantity && (
-              <>
-                <div className="text-blue-700">Available:</div>
-                <div className="text-blue-900 font-medium">
-                  {selectedVariant.inventory.quantity} units
-                </div>
-              </>
-            )}
+
+            {(() => {
+              let quantity: number | undefined;
+              if ('inventory' in selectedVariant && selectedVariant.inventory.quantity) {
+                quantity = selectedVariant.inventory.quantity;
+              } else if ('stock' in selectedVariant) {
+                quantity = selectedVariant.stock;
+              }
+
+              return quantity ? (
+                <>
+                  <div className="text-blue-700">Available:</div>
+                  <div className="text-blue-900 font-medium">
+                    {quantity} units
+                  </div>
+                </>
+              ) : null;
+            })()}
           </div>
         </motion.div>
       )}

@@ -779,8 +779,8 @@ const ReviewsList: React.FC<ReviewsListProps> = ({
   onAnalyticsEvent
 }) => {
   // State
-  const { value: filters, setValue: setFilters } = useLocalStorage('reviews-filters', defaultFilters);
-  const { value: sorting, setValue: setSorting } = useLocalStorage('reviews-sorting', defaultSorting);
+  const { value: filters, setValue: setFilters } = useLocalStorage<Partial<ReviewsListFilters>>('reviews-filters', { defaultValue: defaultFilters });
+  const { value: sorting, setValue: setSorting } = useLocalStorage<ReviewsListSorting>('reviews-sorting', { defaultValue: defaultSorting });
   const [searchTerm, setSearchTerm] = useState('');
   const [currentView, setCurrentView] = useState(variant);
   const [showFiltersPanel, setShowFiltersPanel] = useState(false);

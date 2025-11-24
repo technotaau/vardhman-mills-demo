@@ -391,11 +391,7 @@ export const PasswordChange: React.FC<PasswordChangeProps> = ({
       setLastChanged(new Date().toISOString());
 
       if (changePassword) {
-        await changePassword({
-          currentPassword,
-          newPassword,
-          confirmPassword,
-        });
+        await changePassword(currentPassword, newPassword);
       }
 
       notification.success('Password changed successfully', {

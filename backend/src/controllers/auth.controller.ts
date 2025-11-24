@@ -59,16 +59,65 @@ export const register = catchAsync(async (req: Request, res: Response, next: Nex
 export const login = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
 
-  // Check if user exists && password is correct
-  const user = await User.findOne({ email }).select('+password');
+  // Check if email and password are provided
+  if (!email || !password) {
+    return next(new AppError('Please provide email and password', 400));
+  }
 
-  if (!user || !(await user.comparePassword(password))) {
+  // Find user and include password and lockout fields
+  const user = await User.findOne({ email }).select('+password +loginAttempts +lockUntil');
+
+  if (!user) {
     return next(new AppError('Incorrect email or password', 401));
+  }
+
+  // Check if account is locked
+  if (user.isLocked) {
+    const lockUntilTime = user.lockUntil ? new Date(user.lockUntil) : new Date();
+    const remainingTime = Math.ceil((lockUntilTime.getTime() - Date.now()) / (60 * 1000)); // minutes
+    return next(
+      new AppError(
+        `Account locked due to too many failed login attempts. Please try again in ${remainingTime} minutes.`,
+        429
+      )
+    );
   }
 
   // Check if user is active
   if (!user.isActive) {
     return next(new AppError('Your account has been deactivated. Please contact support.', 401));
+  }
+
+  // Verify password
+  const isPasswordCorrect = await user.comparePassword(password);
+
+  if (!isPasswordCorrect) {
+    // Increment login attempts on failed password
+    await user.incLoginAttempts();
+
+    // Calculate remaining attempts
+    const remainingAttempts = 5 - (user.loginAttempts || 0) - 1; // -1 because we just incremented
+
+    if (remainingAttempts > 0) {
+      return next(
+        new AppError(
+          `Incorrect email or password. ${remainingAttempts} attempt(s) remaining before account lockout.`,
+          401
+        )
+      );
+    } else {
+      return next(
+        new AppError(
+          'Account locked due to too many failed login attempts. Please try again in 2 hours or reset your password.',
+          429
+        )
+      );
+    }
+  }
+
+  // Password correct - reset login attempts if any
+  if (user.loginAttempts && user.loginAttempts > 0) {
+    await user.resetLoginAttempts();
   }
 
   // Update last login
@@ -198,6 +247,42 @@ export const getMe = (req: AuthRequest, res: Response, next: NextFunction) => {
   req.params.id = req.user!.id;
   next();
 };
+
+// Refresh access token using refresh token
+export const refreshAccessToken = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  // Get refresh token from cookie or body
+  const { refreshToken } = req.cookies;
+  const refreshTokenBody = req.body.refreshToken;
+  const token = refreshToken || refreshTokenBody;
+
+  if (!token) {
+    return next(new AppError('Please provide a refresh token', 401));
+  }
+
+  // Hash the refresh token to match database
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(token)
+    .digest('hex');
+
+  // Find user with this refresh token
+  const user = await User.findOne({
+    refreshToken: hashedToken,
+    refreshTokenExpires: { $gt: Date.now() } // Check not expired
+  });
+
+  if (!user) {
+    return next(new AppError('Invalid or expired refresh token. Please login again.', 401));
+  }
+
+  // Check if user is active
+  if (!user.isActive) {
+    return next(new AppError('Your account has been deactivated.', 401));
+  }
+
+  // Generate new tokens
+  await createSendToken(user, 200, res);
+});
 
 // Social login handlers (to be implemented with Passport.js or similar)
 export const googleAuth = catchAsync(async (req: Request, res: Response, next: NextFunction) => {

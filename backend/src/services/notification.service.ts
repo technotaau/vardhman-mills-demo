@@ -12,6 +12,16 @@ interface NotificationPayload {
 
 export class NotificationService {
   /**
+   * Ensure messaging is initialized
+   */
+  private static ensureMessaging() {
+    if (!messaging) {
+      throw new Error('Firebase messaging is not initialized. Please check Firebase configuration.');
+    }
+    return messaging;
+  }
+
+  /**
    * Send notification to a single device
    */
   static async sendToDevice(
@@ -40,7 +50,7 @@ export class NotificationService {
         },
       };
 
-      const response = await messaging.send(message);
+      const response = await this.ensureMessaging().send(message);
       console.log('✅ Notification sent successfully:', response);
       return response;
     } catch (error) {
@@ -74,7 +84,7 @@ export class NotificationService {
         },
       };
 
-      const response = await messaging.sendEachForMulticast(message);
+      const response = await this.ensureMessaging().sendEachForMulticast(message);
       console.log(`✅ ${response.successCount} notifications sent successfully`);
       console.log(`❌ ${response.failureCount} notifications failed`);
       
@@ -112,7 +122,7 @@ export class NotificationService {
         },
       };
 
-      const response = await messaging.send(message);
+      const response = await this.ensureMessaging().send(message);
       console.log('✅ Topic notification sent successfully:', response);
       return response;
     } catch (error) {
@@ -129,7 +139,7 @@ export class NotificationService {
     topic: string
   ): Promise<void> {
     try {
-      const response = await messaging.subscribeToTopic(tokens, topic);
+      const response = await this.ensureMessaging().subscribeToTopic(tokens, topic);
       console.log(`✅ Successfully subscribed to topic: ${topic}`);
       console.log(`Success: ${response.successCount}, Failures: ${response.failureCount}`);
     } catch (error) {
@@ -146,7 +156,7 @@ export class NotificationService {
     topic: string
   ): Promise<void> {
     try {
-      const response = await messaging.unsubscribeFromTopic(tokens, topic);
+      const response = await this.ensureMessaging().unsubscribeFromTopic(tokens, topic);
       console.log(`✅ Successfully unsubscribed from topic: ${topic}`);
       console.log(`Success: ${response.successCount}, Failures: ${response.failureCount}`);
     } catch (error) {

@@ -27,11 +27,11 @@ const WhatsappEnquiry: React.FC<WhatsappEnquiryProps> = ({
 
     const productUrl = `${window.location.origin}/products/${product.slug}`;
     
-    const message = customMessage || 
+    const message = customMessage ||
       `Hi, I'm interested in the following product:\n\n` +
       `*${product.name}*\n` +
       `SKU: ${product.sku}\n` +
-      `Price: ₹${product.pricing.basePrice.amount}\n\n` +
+      `Price: ₹${product.pricing?.basePrice?.amount ?? 0}\n\n` +
       `Product Link: ${productUrl}\n\n` +
       `Could you please provide more information?`;
 

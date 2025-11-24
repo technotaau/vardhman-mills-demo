@@ -382,15 +382,32 @@ export const selectViewMode = (state: { product: ProductState }) => state.produc
 export const selectSortBy = (state: { product: ProductState }) => state.product.sortBy;
 export const selectSearchQuery = (state: { product: ProductState }) => state.product.searchQuery;
 
+// Helper function to safely get product price (handles both variant types)
+const getProductPrice = (product: Product): number => {
+  const variant = product.variants?.[0];
+  if (variant) {
+    // Check if it's a ProductVariant with pricing object
+    if ('pricing' in variant && variant.pricing?.basePrice?.amount) {
+      return variant.pricing.basePrice.amount;
+    }
+    // Check if it's a BackendProductVariant with simple price
+    if ('price' in variant && typeof variant.price === 'number') {
+      return variant.price;
+    }
+  }
+  // Fallback to product-level pricing
+  return product.pricing?.basePrice?.amount || product.price || 0;
+};
+
 // Complex selectors
 export const selectFilteredProducts = (state: { product: ProductState }) => {
   const { products, selectedFilters } = state.product;
-  
+
   return products.filter(product => {
     // Price range filter
     if (selectedFilters.priceRange) {
       const [min, max] = selectedFilters.priceRange;
-      const price = product.variants?.[0]?.pricing?.basePrice?.amount || product.pricing?.basePrice?.amount || 0;
+      const price = getProductPrice(product);
       if (price < min || price > max) return false;
     }
     
@@ -428,7 +445,7 @@ export const selectProductStats = (state: { product: ProductState }) => {
   return {
     totalProducts: products.length,
     averagePrice: products.reduce((sum, p) => {
-      const price = p.variants?.[0]?.pricing?.basePrice?.amount || p.pricing?.basePrice?.amount || 0;
+      const price = getProductPrice(p);
       return sum + price;
     }, 0) / products.length || 0,
     averageRating: products.reduce((sum, p) => {

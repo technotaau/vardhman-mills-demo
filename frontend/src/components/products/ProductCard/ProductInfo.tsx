@@ -72,11 +72,11 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
             </>
           )}
           {showBrand && product.brand && (
-            <Link 
-              href={`/brands/${product.brand.slug}`}
+            <Link
+              href={`/brands/${typeof product.brand === 'string' ? product.brand.toLowerCase().replace(/\s+/g, '-') : product.brand.slug}`}
               className="hover:text-primary transition-colors font-medium"
             >
-              {product.brand.name}
+              {typeof product.brand === 'string' ? product.brand : product.brand.name}
             </Link>
           )}
         </div>

@@ -1,6 +1,7 @@
 import { messaging, auth, firestore } from '../config/firebase.config';
 import type { Message, MulticastMessage, BatchResponse } from 'firebase-admin/messaging';
 import type { UserRecord } from 'firebase-admin/auth';
+import type { QueryDocumentSnapshot } from 'firebase-admin/firestore';
 
 /**
  * Firebase Utilities for Backend Operations
@@ -595,7 +596,7 @@ export async function getUserNotifications(
       .limit(limit)
       .get();
 
-    return snapshot.docs.map((doc) => ({
+    return snapshot.docs.map((doc: QueryDocumentSnapshot) => ({
       id: doc.id,
       ...doc.data(),
     }));
@@ -722,7 +723,7 @@ export async function getNotificationStats(
       clicked: 0,
     };
 
-    snapshot.docs.forEach((doc) => {
+    snapshot.docs.forEach((doc: QueryDocumentSnapshot) => {
       const data = doc.data();
       stats[data.status as keyof typeof stats]++;
     });

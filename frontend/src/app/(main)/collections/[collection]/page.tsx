@@ -60,6 +60,7 @@ import type { Collection, Product } from '@/types/product.types';
 
 // Utils
 import { cn, formatNumber, formatDate } from '@/lib/utils/index';
+import { getProductPricing } from '@/utils/productHelpers';
 
 // ============================================================================
 // TYPES
@@ -383,10 +384,10 @@ export default function CollectionPage({ params }: CollectionPageProps) {
 
     // Price filter
     if (filters.minPrice !== undefined) {
-      result = result.filter((p) => p.pricing.basePrice.amount >= filters.minPrice!);
+      result = result.filter((p) => (getProductPricing(p)?.basePrice?.amount || 0) >= filters.minPrice!);
     }
     if (filters.maxPrice !== undefined) {
-      result = result.filter((p) => p.pricing.basePrice.amount <= filters.maxPrice!);
+      result = result.filter((p) => (getProductPricing(p)?.basePrice?.amount || 0) <= filters.maxPrice!);
     }
 
     // Category filter
@@ -397,10 +398,10 @@ export default function CollectionPage({ params }: CollectionPageProps) {
     // Sorting
     switch (filters.sortBy) {
       case 'price_asc':
-        result.sort((a, b) => a.pricing.basePrice.amount - b.pricing.basePrice.amount);
+        result.sort((a, b) => (getProductPricing(a)?.basePrice?.amount || 0) - (getProductPricing(b)?.basePrice?.amount || 0));
         break;
       case 'price_desc':
-        result.sort((a, b) => b.pricing.basePrice.amount - a.pricing.basePrice.amount);
+        result.sort((a, b) => (getProductPricing(b)?.basePrice?.amount || 0) - (getProductPricing(a)?.basePrice?.amount || 0));
         break;
       case 'name_asc':
         result.sort((a, b) => a.name.localeCompare(b.name));

@@ -42,11 +42,12 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
     const searchTerms = query.toLowerCase().split(' ').filter(Boolean);
 
     return products.filter((product) => {
+      const brandName = typeof product.brand === 'string' ? product.brand : product.brand?.name;
       const searchableText = [
         product.name,
         product.description,
         product.shortDescription,
-        product.brand?.name,
+        brandName,
         product.category?.name,
         product.sku,
         ...(product.tags || []),

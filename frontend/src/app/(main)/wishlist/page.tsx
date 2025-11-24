@@ -122,6 +122,8 @@ interface WishlistState {
 const MOCK_WISHLIST_ITEMS_DEPRECATED: WishlistItem[] = [
   {
     id: 'wl-1',
+    userId: 'user-1',
+    productId: 'prod-1',
     addedAt: '2024-01-15T10:30:00Z',
     priceWhenAdded: 2499,
     notifyOnPriceDrop: true,
@@ -131,38 +133,25 @@ const MOCK_WISHLIST_ITEMS_DEPRECATED: WishlistItem[] = [
       name: 'Premium Cotton Bedsheet Set',
       slug: 'premium-cotton-bedsheet-set',
       description: 'Luxury 400 thread count Egyptian cotton bedsheet set with pillowcases',
-      shortDescription: 'Luxury Egyptian cotton bedsheet',
-      sku: 'BED-001',
-      status: 'active',
-      featured: true,
-      category: { id: 'cat-1', name: 'Bedsheets', slug: 'bedsheets', description: 'Quality bedsheets', parentId: null, isActive: true, displayOrder: 1 } as unknown as Category,
-      pricing: { 
-        basePrice: { amount: 2499, currency: 'INR', formatted: '₹2,499' },
-        salePrice: { amount: 1999, currency: 'INR', formatted: '₹1,999' },
-        compareAtPrice: { amount: 2999, currency: 'INR', formatted: '₹2,999' },
-        isDynamicPricing: false,
-        taxable: true
-      } as unknown as Pricing,
-      inventory: { 
-        isInStock: true, 
-        quantity: 50, 
-        lowStockThreshold: 10, 
-        isLowStock: false,
-        availableQuantity: 50,
-        backorderAllowed: false, 
-        sku: 'BED-001' 
-      } as unknown as StockInfo,
-      media: { 
-        images: [{ url: '/images/products/bedsheet-1.jpg', alt: 'Bedsheet', width: 800, height: 800 }], 
-        videos: [], 
-        thumbnail: { url: '/images/products/bedsheet-1-thumb.jpg', alt: 'Bedsheet thumbnail', width: 200, height: 200 }
-      } as unknown as Media,
-      rating: { average: 4.5, count: 128 } as Rating,
+      price: 2499,
+      salePrice: 1999,
+      image: '/images/products/bedsheet-1.jpg',
+      gallery: ['/images/products/bedsheet-1.jpg'],
+      category: 'Bedsheets',
+      brand: 'Premium Cotton',
+      inStock: true,
+      stockQuantity: 50,
+      rating: 4.5,
       reviewCount: 128,
-    } as unknown as Product,
+      tags: ['bedding', 'cotton', 'luxury'],
+      features: ['400 thread count', 'Egyptian cotton', 'Includes pillowcases'],
+      sku: 'BED-001',
+    },
   },
   {
     id: 'wl-2',
+    userId: 'user-1',
+    productId: 'prod-2',
     addedAt: '2024-01-14T15:20:00Z',
     priceWhenAdded: 1799,
     notifyOnPriceDrop: true,
@@ -172,38 +161,25 @@ const MOCK_WISHLIST_ITEMS_DEPRECATED: WishlistItem[] = [
       name: 'Soft Bath Towel Set - 6 Pieces',
       slug: 'soft-bath-towel-set',
       description: 'Ultra-soft Turkish cotton bath towels, highly absorbent',
-      shortDescription: 'Turkish cotton towel set',
-      sku: 'TWL-002',
-      status: 'active',
-      featured: false,
-      category: { id: 'cat-2', name: 'Towels', slug: 'towels', description: 'Bath towels', parentId: null, isActive: true, displayOrder: 2 } as unknown as Category,
-      pricing: { 
-        basePrice: { amount: 1799, currency: 'INR', formatted: '₹1,799' },
-        salePrice: { amount: 1499, currency: 'INR', formatted: '₹1,499' },
-        compareAtPrice: { amount: 2199, currency: 'INR', formatted: '₹2,199' },
-        isDynamicPricing: false,
-        taxable: true
-      } as unknown as Pricing,
-      inventory: { 
-        isInStock: false, 
-        quantity: 0, 
-        lowStockThreshold: 5, 
-        isLowStock: true,
-        availableQuantity: 0,
-        backorderAllowed: true, 
-        sku: 'TWL-002' 
-      } as unknown as StockInfo,
-      media: { 
-        images: [{ url: '/images/products/towel-1.jpg', alt: 'Towel', width: 800, height: 800 }], 
-        videos: [], 
-        thumbnail: { url: '/images/products/towel-1-thumb.jpg', alt: 'Towel thumbnail', width: 200, height: 200 }
-      } as unknown as Media,
-      rating: { average: 4.7, count: 95 } as Rating,
+      price: 1799,
+      salePrice: 1499,
+      image: '/images/products/towel-1.jpg',
+      gallery: ['/images/products/towel-1.jpg'],
+      category: 'Towels',
+      brand: 'Turkish Cotton Co',
+      inStock: false,
+      stockQuantity: 0,
+      rating: 4.7,
       reviewCount: 95,
-    } as unknown as Product,
+      tags: ['towels', 'bath', 'turkish-cotton'],
+      features: ['Ultra-soft', 'Highly absorbent', '6-piece set'],
+      sku: 'TWL-002',
+    },
   },
   {
     id: 'wl-3',
+    userId: 'user-1',
+    productId: 'prod-3',
     addedAt: '2024-01-12T09:45:00Z',
     priceWhenAdded: 3999,
     notifyOnPriceDrop: false,
@@ -213,35 +189,20 @@ const MOCK_WISHLIST_ITEMS_DEPRECATED: WishlistItem[] = [
       name: 'Designer Table Runner',
       slug: 'designer-table-runner',
       description: 'Handcrafted silk table runner with embroidered details',
-      shortDescription: 'Handcrafted silk runner',
-      sku: 'TBL-003',
-      status: 'active',
-      featured: true,
-      category: { id: 'cat-3', name: 'Table Linen', slug: 'table-linen', description: 'Table accessories', parentId: null, isActive: true, displayOrder: 3 } as unknown as Category,
-      pricing: { 
-        basePrice: { amount: 3999, currency: 'INR', formatted: '₹3,999' },
-        salePrice: { amount: 3299, currency: 'INR', formatted: '₹3,299' },
-        compareAtPrice: { amount: 4999, currency: 'INR', formatted: '₹4,999' },
-        isDynamicPricing: false,
-        taxable: true
-      } as unknown as Pricing,
-      inventory: { 
-        isInStock: true, 
-        quantity: 25, 
-        lowStockThreshold: 5, 
-        isLowStock: false,
-        availableQuantity: 25,
-        backorderAllowed: false, 
-        sku: 'TBL-003' 
-      } as unknown as StockInfo,
-      media: { 
-        images: [{ url: '/images/products/runner-1.jpg', alt: 'Table Runner', width: 800, height: 800 }], 
-        videos: [], 
-        thumbnail: { url: '/images/products/runner-1-thumb.jpg', alt: 'Runner thumbnail', width: 200, height: 200 }
-      } as unknown as Media,
-      rating: { average: 4.8, count: 67 } as Rating,
+      price: 3999,
+      salePrice: 3299,
+      image: '/images/products/runner-1.jpg',
+      gallery: ['/images/products/runner-1.jpg'],
+      category: 'Table Linen',
+      brand: 'Designer Home',
+      inStock: true,
+      stockQuantity: 25,
+      rating: 4.8,
       reviewCount: 67,
-    } as unknown as Product,
+      tags: ['table-linen', 'silk', 'handcrafted'],
+      features: ['Handcrafted', 'Silk material', 'Embroidered details'],
+      sku: 'TBL-003',
+    },
   },
 ];
 
@@ -282,7 +243,7 @@ export default function WishlistPage() {
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
   const { addItem: addToCart } = useCart();
-  const { items: wishlistItems, removeItem } = useWishlist();
+  const { items: wishlistItems } = useWishlist();
 
   // State
   const [wishlistState, setWishlistState] = useState<WishlistState>({
@@ -304,11 +265,45 @@ export default function WishlistPage() {
     setWishlistState(prev => ({ ...prev, items: wishlistItems || [] }));
   }, [wishlistItems]);
 
-  // Helper functions to safely access product properties
-  const getPrice = (item: WishlistItem) => item.product.salePrice || item.product.price;
-  const getStockStatus = (item: WishlistItem) => item.product.inStock;
+  // Helper functions to safely access product properties from WishlistItem
+  const getPrice = (item: WishlistItem) => {
+    return item.product.salePrice || item.product.price;
+  };
+  const getStockStatus = (item: WishlistItem) => {
+    return item.product.inStock;
+  };
   const getProductName = (item: WishlistItem) => item.product.name;
   const getProductId = (item: WishlistItem) => item.product.id;
+
+  // Helper to convert simplified wishlist product to full Product type for cart
+  const toFullProduct = (item: WishlistItem): Product => {
+    const now = new Date().toISOString();
+    const categoryValue = item.product.category || 'uncategorized';
+    const categoryObj = typeof categoryValue === 'string'
+      ? { id: categoryValue, name: categoryValue, slug: categoryValue, createdAt: now, updatedAt: now }
+      : (categoryValue as { id: string; name: string; slug: string });
+
+    return {
+      ...item.product,
+      // Required Product fields with defaults
+      id: item.product.id,
+      categoryId: typeof categoryValue === 'string' ? categoryValue : (categoryObj?.id || 'uncategorized'),
+      category: categoryObj as unknown as Category,
+      collectionIds: [],
+      collections: [],
+      variants: [],
+      // Stock info
+      inventory: {
+        isInStock: item.product.inStock,
+        quantity: item.product.stockQuantity,
+        lowStockThreshold: 10,
+        trackInventory: true,
+      },
+      // Timestamps
+      createdAt: now,
+      updatedAt: now,
+    } as unknown as Product;
+  };
 
   const [isLoading, setIsLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -373,7 +368,15 @@ export default function WishlistPage() {
 
     // Apply category filter
     if (wishlistState.filterBy.category) {
-      filtered = filtered.filter(item => item.product.category === wishlistState.filterBy.category);
+      filtered = filtered.filter(item => {
+        const category = item.product.category;
+        const categoryName = typeof category === 'string'
+          ? category
+          : (category && typeof category === 'object' && 'name' in category
+            ? (category as { name: string }).name
+            : '');
+        return categoryName === wishlistState.filterBy.category;
+      });
     }
 
     // Apply sorting
@@ -445,12 +448,9 @@ export default function WishlistPage() {
   const handleRemoveItem = useCallback(async (itemId: string) => {
     setIsProcessing(true);
     try {
-      // Log using wishlist context removeItem if available
-      console.log('Removing item with wishlist context support:', itemId, 'removeItem available:', typeof removeItem);
-      
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
       setWishlistState(prev => ({
         ...prev,
         items: prev.items.filter(item => item.id !== itemId),
@@ -472,7 +472,7 @@ export default function WishlistPage() {
     } finally {
       setIsProcessing(false);
     }
-  }, [toast, removeItem]);
+  }, [toast]);
 
   const handleMoveToCart = useCallback(async (itemId: string) => {
     setIsProcessing(true);
@@ -480,7 +480,7 @@ export default function WishlistPage() {
       const item = wishlistState.items.find(i => i.id === itemId);
       if (!item) return;
 
-      if (!item.product.inventory.isInStock) {
+      if (!getStockStatus(item)) {
         toast({
           title: 'Out of stock',
           description: 'This item is currently unavailable',
@@ -491,9 +491,9 @@ export default function WishlistPage() {
 
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Add to cart
-      addToCart(item.product, 1);
+
+      // Add to cart (convert to full Product type)
+      addToCart(toFullProduct(item), 1);
 
       // Remove from wishlist
       setWishlistState(prev => ({
@@ -540,9 +540,9 @@ export default function WishlistPage() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Add all to cart
+      // Add all to cart (convert to full Product type)
       selectedItemsArray.forEach(item => {
-        addToCart(item.product, 1);
+        addToCart(toFullProduct(item), 1);
       });
 
       // Remove from wishlist
@@ -800,7 +800,7 @@ export default function WishlistPage() {
               <div>
                 <p className="text-sm text-gray-600">On Sale</p>
                 <p className="text-xl font-bold text-gray-900">
-                  {wishlistState.items.filter(i => i.product.salePrice).length}
+                  {wishlistState.items.filter(i => !!i.product.salePrice).length}
                 </p>
               </div>
             </div>
@@ -1147,28 +1147,33 @@ export default function WishlistPage() {
 
   const renderWishlistItems = () => {
     // Transform WishlistItemType to WishlistItem format for components
-    const transformedItems = filteredAndSortedItems.map(item => ({
-      id: item.id,
-      productId: item.product.id,
-      name: item.product.name,
-      price: getPrice(item),
-      originalPrice: item.product.price !== getPrice(item) ? item.product.price : undefined,
-      image: item.product.image || (item.product.gallery && item.product.gallery.length > 0 ? item.product.gallery[0] : ''),
-      category: typeof item.product.category === 'string' ? item.product.category : item.product.category?.name || '',
-      rating: item.product.rating?.average || 0,
-      reviewCount: item.product.reviewCount || item.product.rating?.count || 0,
-      inStock: item.product.inventory.isInStock,
-      addedAt: item.addedAt,
-      notes: '',
-      priority: item.notifyOnPriceDrop ? 'high' : 'medium' as 'low' | 'medium' | 'high',
-      tags: [],
-      discount: item.product.pricing.salePrice ? 
-        Math.round(((item.product.pricing.compareAtPrice?.amount || item.product.pricing.basePrice.amount) - 
-         item.product.pricing.salePrice.amount) / 
-         (item.product.pricing.compareAtPrice?.amount || item.product.pricing.basePrice.amount) * 100) : undefined,
-      brand: item.product.brand?.name,
-      sku: item.product.sku,
-    }));
+    const transformedItems = filteredAndSortedItems.map(item => {
+      const price = getPrice(item);
+      const hasDiscount = !!item.product.salePrice;
+      const discount = hasDiscount
+        ? Math.round(((item.product.price - (item.product.salePrice || item.product.price)) / item.product.price) * 100)
+        : undefined;
+
+      return {
+        id: item.id,
+        productId: item.product.id,
+        name: item.product.name,
+        price,
+        originalPrice: (item.priceWhenAdded && item.priceWhenAdded !== price) ? item.priceWhenAdded : undefined,
+        image: item.product.image || (item.product.gallery?.[0] ?? ''),
+        category: item.product.category || '',
+        rating: item.product.rating || 0,
+        reviewCount: item.product.reviewCount || 0,
+        inStock: item.product.inStock,
+        addedAt: item.addedAt,
+        notes: '',
+        priority: (item.notifyOnPriceDrop ? 'high' : 'medium') as 'low' | 'medium' | 'high',
+        tags: item.product.tags || [],
+        discount,
+        brand: item.product.brand,
+        sku: item.product.sku || '',
+      };
+    });
 
     if (wishlistState.view === 'grid') {
       return (
@@ -1190,7 +1195,7 @@ export default function WishlistPage() {
                     onSelect={() => handleSelectItem(transformedItem.id)}
                     onRemove={() => handleRemoveItem(transformedItem.id)}
                     onMoveToCart={() => handleMoveToCart(transformedItem.id)}
-                    onView={() => setShowQuickView(originalItem.product)}
+                    onView={() => setShowQuickView(toFullProduct(originalItem))}
                   />
                 </motion.div>
               );
@@ -1287,22 +1292,24 @@ export default function WishlistPage() {
   const isEmpty = filteredAndSortedItems.length === 0;
 
   // Transform wishlist items for WishlistActions component - match its local WishlistItem interface
-  const transformedItems = filteredAndSortedItems.map((item) => ({
-    id: item.id,
-    productId: item.product.id,
-    name: item.product.name,
-    price: item.product.pricing?.salePrice?.amount || item.product.pricing?.basePrice?.amount || 0,
-    originalPrice: item.priceWhenAdded,
-    image: item.product.media?.images?.[0]?.url || '',
-    category: item.product.category?.name || '',
-    rating: item.product.rating?.average || 0,
-    reviewCount: item.product.reviewCount || 0,
-    inStock: item.product.inventory?.isInStock || false,
-    addedAt: item.addedAt,
-    notes: undefined,
-    priority: 'medium' as const,
-    tags: item.product.tags || [],
-  }));
+  const transformedItemsForActions = filteredAndSortedItems.map((item) => {
+    return {
+      id: item.id,
+      productId: item.product.id,
+      name: item.product.name,
+      price: item.product.salePrice || item.product.price,
+      originalPrice: item.priceWhenAdded,
+      image: item.product.image || '',
+      category: item.product.category || '',
+      rating: item.product.rating || 0,
+      reviewCount: item.product.reviewCount || 0,
+      inStock: item.product.inStock,
+      addedAt: item.addedAt,
+      notes: undefined,
+      priority: 'medium' as const,
+      tags: item.product.tags || [],
+    };
+  });
 
   return (
     <>
@@ -1455,7 +1462,7 @@ export default function WishlistPage() {
                       {/* Hidden WishlistActions component for future use */}
                       <div className="hidden">
                         <WishlistActions
-                          items={transformedItems}
+                          items={transformedItemsForActions}
                           selectedItems={Array.from(wishlistState.selectedItems)}
                           onSelectionChange={(ids: string[]) => {
                             setWishlistState(prev => ({
@@ -1518,7 +1525,7 @@ export default function WishlistPage() {
                         {wishlistState.items.slice(0, 4).map((item) => (
                           <div key={`rec-${item.id}`} className="hidden">
                             <ProductCard
-                              product={item.product}
+                              product={toFullProduct(item)}
                               variant="grid"
                               showQuickView={true}
                               showActions={true}
@@ -1550,49 +1557,52 @@ export default function WishlistPage() {
                   {wishlistState.view === 'list' && wishlistState.items.length > 0 && (
                     <div className="hidden">
                       <div className="space-y-4">
-                        {wishlistState.items.map((item) => (
-                          <WishlistItem
-                            key={item.id}
-                            item={{
-                              id: item.id,
-                              wishlistId: item.id,
-                              productId: item.product.id,
-                              product: item.product,
-                              variantId: undefined,
-                              variant: undefined,
-                              addedAt: item.addedAt,
-                              notes: undefined,
-                              priority: 'medium' as const,
-                              priceAlertEnabled: item.notifyOnPriceDrop,
-                              stockAlertEnabled: item.notifyOnStock,
-                              originalPrice: {
-                                amount: item.priceWhenAdded,
-                                currency: 'INR' as const,
-                                formatted: `₹${item.priceWhenAdded}`,
-                              },
-                              isAvailable: item.product.inventory?.isInStock || false,
-                              priceChanged: false,
-                              priceChangePercentage: 0,
-                              createdAt: item.addedAt,
-                              updatedAt: item.addedAt,
-                            }}
-                            onRemove={() => handleRemoveItem(item.id)}
-                            onAddToCart={() => handleMoveToCart(item.id)}
-                            onClick={() => setShowQuickView(wishlistState.items.find(i => i.id === item.id)?.product || null)}
-                            isSelected={wishlistState.selectedItems.has(item.id)}
-                            onSelect={(checked: boolean) => {
-                              if (checked) {
-                                handleSelectItem(item.id);
-                              } else {
-                                setWishlistState(prev => {
-                                  const newSelected = new Set(prev.selectedItems);
-                                  newSelected.delete(item.id);
-                                  return { ...prev, selectedItems: newSelected };
-                                });
-                              }
-                            }}
-                          />
-                        ))}
+                        {wishlistState.items.map((item) => {
+                          const fullProduct = toFullProduct(item);
+                          return (
+                            <WishlistItemComponent
+                              key={item.id}
+                              item={{
+                                id: item.id,
+                                wishlistId: item.id,
+                                productId: item.product.id,
+                                product: fullProduct,
+                                variantId: undefined,
+                                variant: undefined,
+                                addedAt: item.addedAt,
+                                notes: undefined,
+                                priority: 'medium' as const,
+                                priceAlertEnabled: item.notifyOnPriceDrop || false,
+                                stockAlertEnabled: item.notifyOnStock || false,
+                                originalPrice: item.priceWhenAdded ? {
+                                  amount: item.priceWhenAdded,
+                                  currency: 'INR' as const,
+                                  formatted: `₹${item.priceWhenAdded}`,
+                                } : undefined,
+                                isAvailable: item.product.inStock,
+                                priceChanged: false,
+                                priceChangePercentage: 0,
+                                createdAt: item.addedAt,
+                                updatedAt: item.addedAt,
+                              }}
+                              onRemove={() => handleRemoveItem(item.id)}
+                              onAddToCart={() => handleMoveToCart(item.id)}
+                              onClick={() => setShowQuickView(fullProduct)}
+                              isSelected={wishlistState.selectedItems.has(item.id)}
+                              onSelect={(checked: boolean) => {
+                                if (checked) {
+                                  handleSelectItem(item.id);
+                                } else {
+                                  setWishlistState(prev => {
+                                    const newSelected = new Set(prev.selectedItems);
+                                    newSelected.delete(item.id);
+                                    return { ...prev, selectedItems: newSelected };
+                                  });
+                                }
+                              }}
+                            />
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -1631,13 +1641,13 @@ export default function WishlistPage() {
             name: showQuickView.name,
             slug: showQuickView.slug,
             description: showQuickView.description || showQuickView.shortDescription || '',
-            images: showQuickView.media?.images?.map((img: { url?: string } | string) => 
+            images: showQuickView.media?.images?.map((img: { url?: string } | string) =>
               typeof img === 'string' ? img : img.url || '') || [],
-            price: showQuickView.pricing.salePrice?.amount || showQuickView.pricing.basePrice.amount,
-            originalPrice: showQuickView.pricing.compareAtPrice?.amount,
+            price: showQuickView.pricing?.salePrice?.amount || showQuickView.pricing?.basePrice?.amount || 0,
+            originalPrice: showQuickView.pricing?.compareAtPrice?.amount,
             rating: showQuickView.rating?.average || 0,
-            reviewCount: showQuickView.reviewCount || 0,
-            inStock: showQuickView.inventory?.isInStock || false,
+            reviewCount: showQuickView.reviewCount || showQuickView.rating?.count || 0,
+            inStock: showQuickView.inventory?.isInStock ?? false,
             stockLevel: showQuickView.inventory?.quantity,
             sku: showQuickView.sku,
           }}

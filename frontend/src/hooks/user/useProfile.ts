@@ -139,7 +139,7 @@ export const useProfile = (options: UseProfileOptions = {}) => {
           loyaltyPoints: 0,
         },
         verification: {
-          emailVerified: user.isEmailVerified || true,
+          emailVerified: user.emailVerified || true,
           phoneVerified: true,
           identityVerified: false,
         },

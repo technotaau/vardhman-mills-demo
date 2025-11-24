@@ -159,10 +159,12 @@ export const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
     if (filters.searchQuery) {
       const query = filters.searchQuery.toLowerCase();
       result = result.filter(
-        (product) =>
-          product.name.toLowerCase().includes(query) ||
-          product.description?.toLowerCase().includes(query) ||
-          product.brand?.name?.toLowerCase().includes(query)
+        (product) => {
+          const brandName = product.brand ? (typeof product.brand === 'string' ? product.brand : product.brand.name) : undefined;
+          return product.name.toLowerCase().includes(query) ||
+            product.description?.toLowerCase().includes(query) ||
+            brandName?.toLowerCase().includes(query);
+        }
       );
     }
 
