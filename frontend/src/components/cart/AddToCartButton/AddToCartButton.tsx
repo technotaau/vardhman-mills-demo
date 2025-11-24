@@ -243,28 +243,28 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
     if (variant) {
       return !variant.inventory.isInStock || variant.inventory.quantity === 0;
     }
-    return !product.inventory.isInStock || product.inventory.quantity === 0;
+    return !product.inventory?.isInStock || product.inventory?.quantity === 0;
   }, [product, variant]);
 
   const maxQuantity = useMemo(() => {
     if (variant) {
       return variant.inventory.quantity;
     }
-    return product.inventory.quantity;
+    return product.inventory?.quantity || 0;
   }, [product, variant]);
 
   const isLowStock = useMemo(() => {
     if (variant) {
       return variant.inventory.isLowStock;
     }
-    return product.inventory.isLowStock;
+    return product.inventory?.isLowStock || false;
   }, [product, variant]);
 
   const effectivePrice: Price = useMemo(() => {
     if (variant && variant.pricing) {
       return variant.pricing.salePrice || variant.pricing.basePrice;
     }
-    return product.pricing.salePrice || product.pricing.basePrice;
+    return product.pricing?.salePrice || product.pricing?.basePrice || { amount: 0, currency: 'INR', formatted: '₹0' };
   }, [product, variant]);
 
   const isDisabled = useMemo(() => {
@@ -427,9 +427,9 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
         variantId: variant?.id,
         name: variant ? `${product.name} - ${variant.name}` : product.name,
         price: effectivePrice.amount,
-        originalPrice: product.pricing.basePrice.amount,
-        discount: product.pricing.salePrice
-          ? product.pricing.basePrice.amount - product.pricing.salePrice.amount
+        originalPrice: product.pricing?.basePrice.amount || 0,
+        discount: product.pricing?.salePrice
+          ? (product.pricing.basePrice.amount - product.pricing.salePrice.amount)
           : 0,
         quantity: buttonState.quantity,
         image: variant?.media?.images?.[0]?.url || product.media?.images?.[0]?.url || '',
@@ -665,7 +665,7 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
           {formatCurrency(effectivePrice.amount * buttonState.quantity, effectivePrice.currency)}
         </span>
 
-        {product.pricing.salePrice && (
+        {product.pricing?.salePrice && (
           <>
             <span className="text-sm text-gray-500 line-through">
               {formatCurrency(

@@ -293,7 +293,7 @@ export const OrderReview: React.FC<OrderReviewProps> = ({
                 <div className="flex-shrink-0">
                   <div className="relative w-16 h-16">
                     <Image
-                      src={item.product.media.primaryImage?.url || item.product.media.images[0]?.url || '/placeholder.png'}
+                      src={item.product.media?.primaryImage?.url || item.product.media?.images[0]?.url || '/placeholder.png'}
                       alt={item.product.name}
                       fill
                       className="object-cover rounded-md"
