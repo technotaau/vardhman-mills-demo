@@ -243,7 +243,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
     phone: user?.phone || '',
     dateOfBirth: '',
     gender: undefined,
-    street: user?.addresses?.[0]?.street || '',
+    street: user?.addresses?.[0]?.address || '',
     city: user?.addresses?.[0]?.city || '',
     state: user?.addresses?.[0]?.state || '',
     zipCode: user?.addresses?.[0]?.postalCode || '',
@@ -266,8 +266,8 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
     timezone: 'America/New_York',
     newsletter: false,
     publicProfile: true,
-    showEmail: user?.preferences?.privacy?.showEmail || false,
-    showPhone: user?.preferences?.privacy?.showPhone || false,
+    showEmail: user?.privacySettings?.showEmail || false,
+    showPhone: user?.privacySettings?.showPhone || false,
   });
 
   const [originalData, setOriginalData] = useState<ProfileFormData>(formData);
@@ -521,19 +521,13 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
           lastName: formData.lastName,
           phone: formData.phone,
           preferences: {
+            ...user?.preferences,
             language: formData.language || 'en',
-            privacy: {
-              showEmail: formData.showEmail || false,
-              showPhone: formData.showPhone || false,
-              allowDataCollection: true,
-            },
-            notifications: {
-              email: formData.newsletter || false,
-              push: true,
-              sms: false,
-              marketing: formData.newsletter || false,
-            },
-            theme: user?.preferences?.theme || 'system',
+          },
+          privacySettings: {
+            ...user?.privacySettings,
+            showEmail: formData.showEmail || false,
+            showPhone: formData.showPhone || false,
           },
         });
       }
