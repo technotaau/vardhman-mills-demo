@@ -822,7 +822,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
 }) => {
   // Hook for draft data
   const { user: authUser } = useAuth();
-  const { value: draftData, setValue: setDraftData } = useLocalStorage('review-draft', {} as ReviewFormData | null);
+  const { value: draftData, setValue: setDraftData } = useLocalStorage<ReviewFormData | null>('review-draft', { defaultValue: null });
   
   // State management
   const [formData, setFormData] = useState<ReviewFormData>({
@@ -910,18 +910,18 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   }, [productId, setDraftData]);
   
   // Helper function to get user display name
-  const getUserDisplayName = (userObj: typeof user | typeof authUser) => {
+  const getUserDisplayName = (userObj: typeof user | typeof authUser): string => {
     if (!userObj) return 'User';
     // For ReviewUser type
-    if ('name' in userObj && userObj.name) return userObj.name;
+    if ('name' in userObj && typeof userObj.name === 'string') return userObj.name;
     // For User type from auth context
-    if ('fullName' in userObj && userObj.fullName) return userObj.fullName;
-    if ('firstName' in userObj && userObj.firstName) return userObj.firstName;
+    if ('fullName' in userObj && typeof userObj.fullName === 'string') return userObj.fullName;
+    if ('firstName' in userObj && typeof userObj.firstName === 'string') return userObj.firstName;
     return 'User';
   };
 
   // Helper function to get user initials
-  const getUserInitials = (userObj: typeof user | typeof authUser) => {
+  const getUserInitials = (userObj: typeof user | typeof authUser): string => {
     const displayName = getUserDisplayName(userObj);
     return displayName.charAt(0).toUpperCase();
   };
@@ -1834,7 +1834,17 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
             <div className="flex items-center gap-3">
               {(user || authUser) && (
                 <Avatar
-                  src={(user || authUser)?.avatar}
+                  src={
+                    (() => {
+                      const avatarData = (user || authUser)?.avatar;
+                      if (!avatarData) return undefined;
+                      if (typeof avatarData === 'string') return avatarData;
+                      if (typeof avatarData === 'object' && avatarData !== null && 'url' in avatarData) {
+                        return (avatarData as { url: string }).url;
+                      }
+                      return undefined;
+                    })()
+                  }
                   alt={getUserDisplayName(user || authUser)}
                   size="md"
                   fallback={getUserInitials(user || authUser)}

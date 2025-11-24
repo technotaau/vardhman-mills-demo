@@ -350,7 +350,7 @@ const ReviewsPagination: React.FC<ReviewsPaginationProps> = ({
   onAnalyticsEvent
 }) => {
   // State
-  const { value: userPageSize, setValue: setUserPageSize } = useLocalStorage('pagination-page-size', defaultPageSize);
+  const { value: userPageSize, setValue: setUserPageSize } = useLocalStorage<number>('pagination-page-size', { defaultValue: defaultPageSize });
 
   // Memoized values
   const currentPageSize = pageSize || userPageSize;
