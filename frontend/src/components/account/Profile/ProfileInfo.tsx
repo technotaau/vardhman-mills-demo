@@ -338,10 +338,10 @@ export const ProfileInfo: React.FC<ProfileInfoProps> = ({
     if (profileUser.email) completed++;
     if (profileUser.phone) completed++;
     if (profileUser.avatar) completed++;
-    if (profileUser.address?.city) completed++;
-    if (profileUser.address?.country) completed++;
-    if (profileUser.isEmailVerified) completed++;
-    if (profileUser.isPhoneVerified) completed++;
+    if (profileUser.addresses?.[0]?.city) completed++;
+    if (profileUser.addresses?.[0]?.country) completed++;
+    if (profileUser.emailVerified) completed++;
+    if (profileUser.phoneVerified) completed++;
     completed++; // Always count as having basic info
     
     return Math.round((completed / total) * 100);
@@ -361,7 +361,7 @@ export const ProfileInfo: React.FC<ProfileInfoProps> = ({
     
     if (navigator.share) {
       navigator.share({
-        title: `${profileUser?.displayName || profileUser?.firstName}'s Profile`,
+        title: `${profileUser?.firstName || 'User'}'s Profile`,
         text: 'Check out my profile!',
         url: profileUrl,
       }).catch(console.error);
@@ -433,7 +433,7 @@ export const ProfileInfo: React.FC<ProfileInfoProps> = ({
                 {profileUser.avatar ? (
                   <Image
                     src={profileUser.avatar}
-                    alt={profileUser.displayName || profileUser.firstName}
+                    alt={profileUser.firstName}
                     width={128}
                     height={128}
                     className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
@@ -443,9 +443,7 @@ export const ProfileInfo: React.FC<ProfileInfoProps> = ({
                     <UserIcon className="w-16 h-16 text-gray-400" />
                   </div>
                 )}
-                {profileUser.status === 'active' ? (
-                  <div className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 border-4 border-white rounded-full" />
-                ) : null}
+                <div className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 border-4 border-white rounded-full" />
               </div>
 
               {/* User Details */}
@@ -454,19 +452,19 @@ export const ProfileInfo: React.FC<ProfileInfoProps> = ({
                   <div>
                     <div className="flex items-center gap-2">
                       <h1 className="text-3xl font-bold text-gray-900">
-                        {profileUser.displayName || `${profileUser.firstName} ${profileUser.lastName}`}
+                        {`${profileUser.firstName} ${profileUser.lastName}`}
                       </h1>
-                      {profileUser.isEmailVerified ? (
+                      {profileUser.emailVerified ? (
                         <CheckBadgeIcon className="w-6 h-6 text-blue-600" title="Verified Account" />
                       ) : null}
                     </div>
                     <p className="text-gray-600 mt-1">@{profileUser.email.split('@')[0]}</p>
                     
                     <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-600">
-                      {profileUser.address?.city ? (
+                      {profileUser.addresses?.[0]?.city ? (
                         <div className="flex items-center gap-1">
                           <MapPinIcon className="w-4 h-4" />
-                          <span>{profileUser.address.city}, {profileUser.address.country}</span>
+                          <span>{profileUser.addresses[0].city}, {profileUser.addresses[0].country}</span>
                         </div>
                       ) : null}
                       <div className="flex items-center gap-1">
@@ -530,7 +528,7 @@ export const ProfileInfo: React.FC<ProfileInfoProps> = ({
                 <p className="text-xs text-gray-600">Email</p>
                 <p className="font-medium text-gray-900">{profileUser.email}</p>
               </div>
-              {profileUser.isEmailVerified ? (
+              {profileUser.emailVerified ? (
                 <ShieldCheckIcon className="w-5 h-5 text-green-600" />
               ) : null}
             </div>
@@ -542,7 +540,7 @@ export const ProfileInfo: React.FC<ProfileInfoProps> = ({
                   <p className="text-xs text-gray-600">Phone</p>
                   <p className="font-medium text-gray-900">{profileUser.phone}</p>
                 </div>
-                {profileUser.isPhoneVerified ? (
+                {profileUser.phoneVerified ? (
                   <ShieldCheckIcon className="w-5 h-5 text-green-600" />
                 ) : null}
               </div>
@@ -665,7 +663,7 @@ export const ProfileInfo: React.FC<ProfileInfoProps> = ({
                       </div>
                       <div className="flex items-center gap-2 text-gray-700">
                         <GlobeAltIcon className="w-4 h-4 text-gray-500" />
-                        <span>Active in {profileUser.address?.country || 'Multiple locations'}</span>
+                        <span>Active in {profileUser.addresses?.[0]?.country || 'Multiple locations'}</span>
                       </div>
                     </div>
                   </div>

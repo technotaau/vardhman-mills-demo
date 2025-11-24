@@ -416,7 +416,7 @@ export const FeaturedCard: React.FC<FeaturedCardProps> = ({
             {/* Brand */}
             {product.brand && (
               <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">
-                {product.brand.name}
+                {typeof product.brand === 'string' ? product.brand : product.brand.name}
               </p>
             )}
 

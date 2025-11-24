@@ -173,11 +173,12 @@ const searchItems = (items: CartItemType[], query: string): CartItemType[] => {
   if (!query.trim()) return items;
 
   const lowerQuery = query.toLowerCase();
-  return items.filter(item => 
-    item.product.name.toLowerCase().includes(lowerQuery) ||
-    item.product.sku?.toLowerCase().includes(lowerQuery) ||
-    item.product.brand?.name.toLowerCase().includes(lowerQuery)
-  );
+  return items.filter(item => {
+    const brandName = item.product.brand ? (typeof item.product.brand === 'string' ? item.product.brand : item.product.brand.name) : undefined;
+    return item.product.name.toLowerCase().includes(lowerQuery) ||
+      item.product.sku?.toLowerCase().includes(lowerQuery) ||
+      brandName?.toLowerCase().includes(lowerQuery);
+  });
 };
 
 // ============================================================================

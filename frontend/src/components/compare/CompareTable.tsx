@@ -211,7 +211,7 @@ const getFeatureValue = (product: ComparisonProduct, feature: ComparisonFeature)
       return prod.rating?.average || null;
     
     case 'brand':
-      return prod.brand?.name || null;
+      return prod.brand ? (typeof prod.brand === 'string' ? prod.brand : prod.brand.name) : null;
     
     case 'material':
       return prod.materials?.[0]?.name || null;
@@ -245,10 +245,12 @@ const getFeatureValue = (product: ComparisonProduct, feature: ComparisonFeature)
     
     default:
       // Try to find in specifications
-      const spec = prod.specifications?.find(s => 
-        s.name.toLowerCase() === feature.sourceField.toLowerCase()
-      );
-      if (spec) return spec.value;
+      if (Array.isArray(prod.specifications)) {
+        const spec = prod.specifications.find((s: any) =>
+          s.name.toLowerCase() === feature.sourceField.toLowerCase()
+        );
+        if (spec) return spec.value;
+      }
       
       // Try direct property access
       return (prod as unknown as Record<string, unknown>)[feature.sourceField] || null;

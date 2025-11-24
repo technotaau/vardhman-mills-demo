@@ -640,7 +640,7 @@ export const CartItem: React.FC<CartItemProps> = ({
               {/* Brand */}
               {item.product.brand && (
                 <p className="text-sm text-gray-600 mt-1">
-                  by <span className="font-medium">{item.product.brand.name}</span>
+                  by <span className="font-medium">{typeof item.product.brand === 'string' ? item.product.brand : item.product.brand.name}</span>
                 </p>
               )}
 
