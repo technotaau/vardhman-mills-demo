@@ -258,9 +258,10 @@ export const WishlistButton: React.FC<WishlistButtonProps> = ({
   }
 }) => {
   // Hooks
-  const { 
-    isInWishlist: checkIsInWishlist, 
-    addToWishlist, 
+  const {
+    items,
+    isInWishlist: checkIsInWishlist,
+    addToWishlist,
     removeFromWishlist
   } = useWishlist();
   const { toast } = useToast();

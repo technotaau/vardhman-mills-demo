@@ -6,7 +6,7 @@ import { EmailTemplateContext } from '../email-utils';
 
 export interface DeliveredItemsReviewContext extends Partial<EmailTemplateContext> {
   user: { name: string; email: string; firstName?: string; };
-  order: { id: string; number: string; currency: string; items: Array<{ name: string; quantity: number; image?: string; }> };
+  order: { id: string; number: string; currency: string; items: Array<{ id: string; name: string; quantity: number; price: number; image?: string; }> };
 }
 
 export const deliveredItemsReviewTemplate = `
