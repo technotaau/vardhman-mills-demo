@@ -12,6 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import type { Cart, CartItem, CartSummary } from '@/types/cart.types';
+import type { Price } from '@/types/common.types';
 
 // Import types for validation
 import type { Product } from '@/types/product.types';
@@ -84,24 +85,30 @@ async function clearCartIdCookie(): Promise<void> {
  * Calculate cart summary
  */
 function calculateCartSummary(cart: Cart): CartSummary {
-  const subtotal = cart.items.reduce((sum, item) => {
-    return sum + item.price * item.quantity;
+  const subtotalAmount = cart.items.reduce((sum, item) => {
+    return sum + item.totalPrice.amount;
   }, 0);
 
-  const discount = cart.appliedCoupons?.reduce((sum, coupon) => {
-    return sum + (coupon.discountAmount || 0);
+  const discountAmount = cart.appliedCoupons?.reduce((sum, coupon) => {
+    return sum + (typeof coupon.discountAmount === 'number' ? coupon.discountAmount : coupon.discountAmount?.amount || 0);
   }, 0) || 0;
 
-  const tax = (subtotal - discount) * 0.18; // 18% GST
-  const shipping = subtotal > 2000 ? 0 : 100; // Free shipping above ₹2000
-  const total = subtotal - discount + tax + shipping;
+  const taxAmount = (subtotalAmount - discountAmount) * 0.18; // 18% GST
+  const shippingAmount = subtotalAmount > 2000 ? 0 : 100; // Free shipping above ₹2000
+  const totalAmount = subtotalAmount - discountAmount + taxAmount + shippingAmount;
+
+  const createPrice = (amount: number): Price => ({
+    amount,
+    currency: cart.currency,
+    formatted: `₹${amount.toLocaleString('en-IN')}`
+  });
 
   return {
-    subtotal,
-    discount,
-    tax,
-    shipping,
-    total,
+    subtotal: createPrice(subtotalAmount),
+    discount: createPrice(discountAmount),
+    tax: createPrice(taxAmount),
+    shipping: createPrice(shippingAmount),
+    total: createPrice(totalAmount),
     currency: cart.currency,
     itemCount: cart.items.length,
     totalQuantity: cart.items.reduce((sum, item) => sum + item.quantity, 0),
@@ -112,14 +119,23 @@ function calculateCartSummary(cart: Cart): CartSummary {
  * Generate mock cart data
  */
 function getMockCart(cartId: string): Cart {
+  const now = new Date().toISOString();
+  const emptyPrice: Price = { amount: 0, currency: 'INR', formatted: '₹0' };
+
   return {
     id: cartId,
     userId: undefined,
     items: [],
     currency: 'INR',
-    lastUpdated: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    subtotal: emptyPrice,
+    taxAmount: emptyPrice,
+    shippingAmount: emptyPrice,
+    discountAmount: emptyPrice,
+    total: emptyPrice,
+    status: 'active',
+    lastActivityAt: now,
+    createdAt: now,
+    updatedAt: now,
     appliedCoupons: [],
     appliedDiscounts: [],
     shippingAddress: undefined,
