@@ -104,14 +104,13 @@ function calculateCartSummary(cart: Cart): CartSummary {
   });
 
   return {
-    subtotal: createPrice(subtotalAmount),
-    discount: createPrice(discountAmount),
-    tax: createPrice(taxAmount),
-    shipping: createPrice(shippingAmount),
-    total: createPrice(totalAmount),
-    currency: cart.currency,
     itemCount: cart.items.length,
-    totalQuantity: cart.items.reduce((sum, item) => sum + item.quantity, 0),
+    uniqueItemCount: cart.items.length,
+    subtotal: createPrice(subtotalAmount),
+    taxAmount: createPrice(taxAmount),
+    shippingAmount: createPrice(shippingAmount),
+    discountAmount: createPrice(discountAmount),
+    total: createPrice(totalAmount),
   };
 }
 
@@ -126,7 +125,7 @@ function getMockCart(cartId: string): Cart {
     id: cartId,
     userId: undefined,
     items: [],
-    currency: 'INR',
+    currency: 'INR' as const,
     subtotal: emptyPrice,
     taxAmount: emptyPrice,
     shippingAmount: emptyPrice,
@@ -139,12 +138,6 @@ function getMockCart(cartId: string): Cart {
     appliedCoupons: [],
     appliedDiscounts: [],
     shippingAddress: undefined,
-    billingAddress: undefined,
-    selectedShippingMethod: undefined,
-    selectedPaymentMethod: undefined,
-    notes: '',
-    metadata: {},
-    expiresAt: new Date(Date.now() + CART_COOKIE_MAX_AGE * 1000).toISOString(),
   };
 }
 
@@ -289,8 +282,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const cartId = `cart_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const mockCart: Cart = {
       ...getMockCart(cartId),
-      ...body,
+      userId: body.userId,
       items: body.items || [],
+      currency: (body.currency as 'INR' | 'USD' | 'EUR') || 'INR' as const,
     };
 
     await setCartIdCookie(cartId);
