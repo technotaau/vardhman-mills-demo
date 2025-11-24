@@ -67,7 +67,7 @@ import { useWishlist } from '@/hooks/useWishlist';
 import { useMediaQuery } from '@/hooks';
 
 // Types
-import type { Product, ProductVariant } from '@/types/product.types';
+import type { Product, ProductVariant, BackendProductVariant } from '@/types/product.types';
 
 // Utils
 import { cn, formatCurrency } from '@/lib/utils';
@@ -122,7 +122,7 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
   const [product, setProduct] = useState<Product | null>(initialProduct);
   const [isLoading, setIsLoading] = useState(!initialProduct);
   const [error, setError] = useState<string | null>(null);
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | BackendProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState('description');
@@ -467,7 +467,7 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
     }, 500);
   }, [product, handleAddToCart, router]);
 
-  const handleVariantChange = useCallback((variant: ProductVariant) => {
+  const handleVariantChange = useCallback((variant: ProductVariant | BackendProductVariant) => {
     setSelectedVariant(variant);
     setQuantity(1);
   }, []);

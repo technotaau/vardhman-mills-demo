@@ -4,14 +4,14 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Play, Pause, Volume2, VolumeX } from 'lucide-react';
-import { Product, ProductVariant } from '@/types/product.types';
+import { Product, ProductVariant, BackendProductVariant } from '@/types/product.types';
 import { ImageAsset, VideoAsset } from '@/types/common.types';
 import { cn } from '@/lib/utils';
 import ProductImageZoom from './ProductImageZoom';
 
 export interface ProductGalleryProps {
   product: Product;
-  selectedVariant?: ProductVariant;
+  selectedVariant?: ProductVariant | BackendProductVariant;
   className?: string;
   showThumbnails?: boolean;
   showZoom?: boolean;
@@ -34,13 +34,33 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   const [isPlaying, setIsPlaying] = useState(autoPlay);
   const [isMuted, setIsMuted] = useState(true);
 
-  // Get media items from variant or product
-  const images = selectedVariant?.media?.images || product.media?.images || [];
-  const videos = selectedVariant?.media?.videos || product.media?.videos || [];
-  
+  // Get media items from variant or product with type guards
+  let images: ImageAsset[] = [];
+  let videos: VideoAsset[] = [];
+
+  if (selectedVariant) {
+    if ('media' in selectedVariant && selectedVariant.media) {
+      images = selectedVariant.media.images || [];
+      videos = selectedVariant.media.videos || [];
+    } else if ('images' in selectedVariant && selectedVariant.images) {
+      // BackendProductVariant has images as string[]
+      images = selectedVariant.images.map(url => ({
+        id: url,
+        url,
+        alt: product.name,
+        width: 800,
+        height: 800,
+        format: 'webp' as const
+      }));
+    }
+  } else {
+    images = product.media?.images || [];
+    videos = product.media?.videos || [];
+  }
+
   const mediaItems: MediaItem[] = [
-    ...images.map(img => ({ ...img, mediaType: 'image' as const })),
-    ...(videos || []).map(vid => ({ ...vid, mediaType: 'video' as const }))
+    ...images.map((img: ImageAsset) => ({ ...img, mediaType: 'image' as const })),
+    ...(videos || []).map((vid: VideoAsset) => ({ ...vid, mediaType: 'video' as const }))
   ];
   
   const currentMedia = mediaItems[currentIndex];
