@@ -834,9 +834,9 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
     // Apply predefined filter
     if (filter) {
       if (filter.category) {
-        result = result.filter(post => 
-          post.category.name.toLowerCase().includes(filter.category!.toLowerCase()) ||
-          post.category.slug.toLowerCase().includes(filter.category!.toLowerCase())
+        result = result.filter(post =>
+          post.categories?.[0]?.name.toLowerCase().includes(filter.category!.toLowerCase()) ||
+          post.categories?.[0]?.slug.toLowerCase().includes(filter.category!.toLowerCase())
         );
       }
       if (filter.tag) {
@@ -856,13 +856,13 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
         result = result.filter(post => post.status === filter.status);
       }
       if (filter.featured !== undefined) {
-        result = result.filter(post => post.isFeatured === filter.featured);
+        result = result.filter(post => post.settings?.isFeatured === filter.featured);
       }
       if (filter.trending !== undefined) {
         // Use views as a proxy for trending
         const trendingThreshold = 10000;
-        result = result.filter(post => 
-          filter.trending ? (post.views >= trendingThreshold) : (post.views < trendingThreshold)
+        result = result.filter(post =>
+          filter.trending ? ((post.engagement?.views ?? 0) >= trendingThreshold) : ((post.engagement?.views ?? 0) < trendingThreshold)
         );
       }
     }
@@ -874,7 +874,7 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
         post.title.toLowerCase().includes(query) ||
         post.excerpt.toLowerCase().includes(query) ||
         post.author.name.toLowerCase().includes(query) ||
-        post.category.name.toLowerCase().includes(query) ||
+        post.categories?.[0]?.name.toLowerCase().includes(query) ||
         post.tags.some((tag: BlogTag) => tag.name.toLowerCase().includes(query))
       );
     }
@@ -882,7 +882,7 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
     // Apply category filter
     if (selectedCategory !== 'All') {
       result = result.filter(post =>
-        post.category.name === selectedCategory
+        post.categories?.[0]?.name === selectedCategory
       );
     }
 
@@ -906,22 +906,22 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
         );
         break;
       case 'popular':
-        result.sort((a, b) => (b.views || 0) - (a.views || 0));
+        result.sort((a, b) => (b.engagement?.views ?? 0) - (a.engagement?.views ?? 0));
         break;
       case 'trending':
         result.sort((a, b) => {
           // Sort by views as a proxy for trending
-          return (b.views || 0) - (a.views || 0);
+          return (b.engagement?.views ?? 0) - (a.engagement?.views ?? 0);
         });
         break;
       case 'most-liked':
-        result.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+        result.sort((a, b) => (b.engagement?.likes ?? 0) - (a.engagement?.likes ?? 0));
         break;
       case 'most-commented':
-        result.sort((a, b) => (b.comments || 0) - (a.comments || 0));
+        result.sort((a, b) => (b.engagement?.comments ?? 0) - (a.engagement?.comments ?? 0));
         break;
       case 'most-viewed':
-        result.sort((a, b) => (b.views || 0) - (a.views || 0));
+        result.sort((a, b) => (b.engagement?.views ?? 0) - (a.engagement?.views ?? 0));
         break;
       case 'alphabetical':
         result.sort((a, b) => a.title.localeCompare(b.title));
@@ -1105,9 +1105,12 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
       if (post.id === postId) {
         return {
           ...post,
-          likes: likedPosts.has(postId) 
-            ? (post.likes || 0) - 1 
-            : (post.likes || 0) + 1,
+          engagement: {
+            ...post.engagement,
+            likes: likedPosts.has(postId)
+              ? (post.engagement?.likes ?? 0) - 1
+              : (post.engagement?.likes ?? 0) + 1,
+          },
         };
       }
       return post;
@@ -1426,10 +1429,10 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
               viewMode === 'list' ? 'w-64 flex-shrink-0' : 'aspect-[16/9]'
             )}>
               <Image
-                src={typeof post.featuredImage === 'string' ? post.featuredImage : post.featuredImage.url}
-                alt={typeof post.featuredImage === 'string' ? (post.featuredImageAlt || post.title) : post.featuredImage.alt}
-                width={typeof post.featuredImage === 'string' ? 1200 : post.featuredImage.width}
-                height={typeof post.featuredImage === 'string' ? 675 : post.featuredImage.height}
+                src={typeof post.featuredImage === 'string' ? post.featuredImage : post.featuredImage?.url || ''}
+                alt={typeof post.featuredImage === 'string' ? post.title : post.featuredImage?.alt || post.title}
+                width={typeof post.featuredImage === 'string' ? 1200 : post.featuredImage?.width || 1200}
+                height={typeof post.featuredImage === 'string' ? 675 : post.featuredImage?.height || 675}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
               
@@ -1437,7 +1440,7 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/20" />
               
               {/* Featured Badge */}
-              {showFeaturedBadge && post.isFeatured && (
+              {showFeaturedBadge && post.settings?.isFeatured && (
                 <Badge
                   variant="secondary"
                   className="absolute top-4 left-4 flex items-center gap-1 bg-blue-600 text-white"
@@ -1448,7 +1451,7 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
               )}
 
               {/* Trending Indicator - Based on views */}
-              {showTrendingIndicator && post.views >= 10000 && (
+              {showTrendingIndicator && (post.engagement?.views ?? 0) >= 10000 && (
                 <Badge
                   variant="destructive"
                   className="absolute top-4 right-4 flex items-center gap-1"
@@ -1470,15 +1473,15 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
             {/* Content */}
             <div className="p-6 flex flex-col flex-1">
               {/* Category */}
-              {showCategories && post.category && (
+              {showCategories && post.categories?.[0] && (
                 <div className="flex flex-wrap gap-2 mb-3">
-                  <Badge 
-                    key={post.category.id} 
-                    variant="secondary" 
+                  <Badge
+                    key={post.categories[0].id}
+                    variant="secondary"
                     className="text-xs"
-                    style={{ backgroundColor: post.category.color || '#6B7280' }}
+                    style={{ backgroundColor: post.categories[0].color || '#6B7280' }}
                   >
-                    {post.category.name}
+                    {post.categories[0].name}
                   </Badge>
                 </div>
               )}
@@ -1538,19 +1541,19 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
                     <Tooltip content="Views">
                       <div className="flex items-center gap-1">
                         <EyeIcon className="h-4 w-4" />
-                        {post.views ? (post.views / 1000).toFixed(1) + 'K' : 0}
+                        {post.engagement?.views ? (post.engagement.views / 1000).toFixed(1) + 'K' : 0}
                       </div>
                     </Tooltip>
                     <Tooltip content="Likes">
                       <div className="flex items-center gap-1">
                         <HeartIcon className="h-4 w-4" />
-                        {post.likes || 0}
+                        {post.engagement?.likes || 0}
                       </div>
                     </Tooltip>
                     <Tooltip content="Comments">
                       <div className="flex items-center gap-1">
                         <ChatBubbleLeftIcon className="h-4 w-4" />
-                        {post.comments || 0}
+                        {post.engagement?.comments || 0}
                       </div>
                     </Tooltip>
                   </div>
