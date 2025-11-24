@@ -38,10 +38,10 @@ const ProductVariants: React.FC<ProductVariantsProps> = ({
   }
 
   const getPriceDifference = (variant: ProductVariant) => {
-    const basePrice = product.pricing.basePrice.amount;
-    const variantPrice = variant.pricing?.basePrice.amount || basePrice;
+    const basePrice = product.pricing?.basePrice?.amount ?? 0;
+    const variantPrice = variant.pricing?.basePrice?.amount ?? basePrice;
     const diff = variantPrice - basePrice;
-    
+
     if (diff === 0) return null;
     return diff > 0 ? `+${diff}` : `${diff}`;
   };

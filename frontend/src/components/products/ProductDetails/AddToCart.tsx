@@ -72,7 +72,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
     return product.pricing;
   }, [product, selectedVariant]);
 
-  const currentPrice = pricing.salePrice?.amount ?? pricing.basePrice.amount;
+  const currentPrice = pricing?.salePrice?.amount ?? pricing?.basePrice?.amount ?? 0;
 
   useEffect(() => {
     if (showSuccess) {
@@ -236,11 +236,11 @@ const AddToCart: React.FC<AddToCartProps> = ({
             ₹{(currentPrice * quantity).toLocaleString('en-IN')}
           </p>
         </div>
-        {pricing.salePrice && (
+        {pricing?.salePrice && (
           <div className="text-right">
             <p className="text-sm text-gray-600">You Save</p>
             <p className="text-lg font-semibold text-green-600">
-              ₹{((pricing.basePrice.amount - currentPrice) * quantity).toLocaleString('en-IN')}
+              ₹{(((pricing?.basePrice?.amount ?? 0) - currentPrice) * quantity).toLocaleString('en-IN')}
             </p>
           </div>
         )}
@@ -320,7 +320,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
           <Check className="h-3 w-3 text-green-600" />
           <span>Easy Returns</span>
         </div>
-        {pricing.salePrice && (
+        {pricing?.salePrice && (
           <div className="flex items-center gap-1">
             <Check className="h-3 w-3 text-green-600" />
             <span>Best Price Guaranteed</span>

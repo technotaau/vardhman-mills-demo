@@ -371,9 +371,9 @@ export const ProductActions: React.FC<ProductActionsProps> = ({
       )}
 
       {/* Low Stock Badge */}
-      {!isOutOfStock && (variant ? variant.inventory.quantity : product.inventory.quantity) < 5 && !compact && (
+      {!isOutOfStock && ((variant ? variant.inventory?.quantity : product.inventory?.quantity) ?? 0) < 5 && !compact && (
         <Badge variant="warning" className="ml-2">
-          Only {variant ? variant.inventory.quantity : product.inventory.quantity} left
+          Only {variant ? variant.inventory?.quantity : product.inventory?.quantity} left
         </Badge>
       )}
     </div>

@@ -89,7 +89,10 @@ const ProductSpecs: React.FC<ProductSpecsProps> = ({
   }
 
   if (product.brand) {
-    additionalSpecs.specs.push({ label: 'Brand', value: product.brand.name });
+    additionalSpecs.specs.push({
+      label: 'Brand',
+      value: typeof product.brand === 'string' ? product.brand : product.brand.name
+    });
   }
 
   if (product.dimensions) {

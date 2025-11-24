@@ -230,7 +230,9 @@ export const QuickView: React.FC<QuickViewProps> = ({ product, isOpen, onClose, 
                   <div className="space-y-6">
                     {/* Brand */}
                     {product.brand && (
-                      <p className="text-sm text-gray-600 font-medium">{product.brand.name}</p>
+                      <p className="text-sm text-gray-600 font-medium">
+                        {typeof product.brand === 'string' ? product.brand : product.brand.name}
+                      </p>
                     )}
 
                     {/* Title */}
@@ -252,7 +254,7 @@ export const QuickView: React.FC<QuickViewProps> = ({ product, isOpen, onClose, 
                               key={i}
                               className={cn(
                                 'w-5 h-5',
-                                i < Math.floor(product.rating.average)
+                                i < Math.floor(product.rating?.average ?? 0)
                                   ? 'fill-yellow-400 text-yellow-400'
                                   : 'text-gray-300'
                               )}
@@ -260,7 +262,7 @@ export const QuickView: React.FC<QuickViewProps> = ({ product, isOpen, onClose, 
                           ))}
                         </div>
                         <span className="text-sm text-gray-600">
-                          {product.rating.average.toFixed(1)} ({product.reviewCount} reviews)
+                          {product.rating?.average?.toFixed(1) ?? '0.0'} ({product.reviewCount ?? 0} reviews)
                         </span>
                       </div>
                     )}

@@ -35,8 +35,8 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   const [isMuted, setIsMuted] = useState(true);
 
   // Get media items from variant or product
-  const images = selectedVariant?.media?.images || product.media.images || [];
-  const videos = selectedVariant?.media?.videos || product.media.videos || [];
+  const images = selectedVariant?.media?.images || product.media?.images || [];
+  const videos = selectedVariant?.media?.videos || product.media?.videos || [];
   
   const mediaItems: MediaItem[] = [
     ...images.map(img => ({ ...img, mediaType: 'image' as const })),

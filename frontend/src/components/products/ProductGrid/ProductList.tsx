@@ -166,7 +166,9 @@ const ProductListItem: React.FC<{
           <div className="space-y-3">
             {/* Brand */}
             {product.brand && (
-              <p className="text-sm text-gray-600 font-medium">{product.brand.name}</p>
+              <p className="text-sm text-gray-600 font-medium">
+                {typeof product.brand === 'string' ? product.brand : product.brand.name}
+              </p>
             )}
 
             {/* Title */}
@@ -188,7 +190,7 @@ const ProductListItem: React.FC<{
                       key={i}
                       className={cn(
                         'w-4 h-4',
-                        i < Math.floor(product.rating.average)
+                        i < Math.floor(product.rating?.average ?? 0)
                           ? 'fill-yellow-400 text-yellow-400'
                           : 'text-gray-300'
                       )}
@@ -196,7 +198,7 @@ const ProductListItem: React.FC<{
                   ))}
                 </div>
                 <span className="text-sm text-gray-600">
-                  {product.rating.average.toFixed(1)} ({product.reviewCount} reviews)
+                  {product.rating?.average?.toFixed(1) ?? '0.0'} ({product.reviewCount ?? 0} reviews)
                 </span>
               </div>
             )}
