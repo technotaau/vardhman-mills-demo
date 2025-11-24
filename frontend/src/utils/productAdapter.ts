@@ -185,7 +185,7 @@ export function adaptAPIProduct(apiProduct: APIProduct): Product {
     isBestseller: apiProduct.isBestseller,
 
     // SEO
-    seo: apiProduct.seo,
+    seo: apiProduct.seo as any, // API SEOData may have different structure
 
     // Dates
     createdAt: apiProduct.createdAt,
