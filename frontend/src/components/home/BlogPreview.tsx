@@ -896,14 +896,18 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
     // Apply sorting
     switch (sortBy) {
       case 'latest':
-        result.sort((a, b) => 
-          new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-        );
+        result.sort((a, b) => {
+          const dateA = typeof a.publishedAt === 'string' ? new Date(a.publishedAt) : new Date();
+          const dateB = typeof b.publishedAt === 'string' ? new Date(b.publishedAt) : new Date();
+          return dateB.getTime() - dateA.getTime();
+        });
         break;
       case 'oldest':
-        result.sort((a, b) => 
-          new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime()
-        );
+        result.sort((a, b) => {
+          const dateA = typeof a.publishedAt === 'string' ? new Date(a.publishedAt) : new Date();
+          const dateB = typeof b.publishedAt === 'string' ? new Date(b.publishedAt) : new Date();
+          return dateA.getTime() - dateB.getTime();
+        });
         break;
       case 'popular':
         result.sort((a, b) => (b.engagement?.views ?? 0) - (a.engagement?.views ?? 0));
@@ -1529,7 +1533,10 @@ export const BlogPreview: React.FC<BlogPreviewProps> = ({
                         {post.author.name}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {formatDistanceToNow(new Date(post.publishedAt), { addSuffix: true })}
+                        {post.publishedAt && typeof post.publishedAt === 'string'
+                          ? formatDistanceToNow(new Date(post.publishedAt), { addSuffix: true })
+                          : 'Recently'
+                        }
                       </p>
                     </div>
                   </div>

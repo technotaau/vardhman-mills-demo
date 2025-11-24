@@ -364,7 +364,7 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
 
   // Calculate current price (needed for callbacks)
   const currentPrice = product
-    ? (selectedVariant?.pricing?.salePrice?.amount || getProductSalePrice(product) || getProductPrice(product))
+    ? (selectedVariant && 'pricing' in selectedVariant ? selectedVariant.pricing?.salePrice?.amount : null) || getProductSalePrice(product) || getProductPrice(product)
     : 0;
 
   // Check delivery availability
@@ -649,7 +649,7 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
                         />
                         {product.variants && product.variants.length > 0 && (
                           <select
-                            value={selectedVariant?.id || ''}
+                            value={selectedVariant ? ('id' in selectedVariant ? selectedVariant.id : selectedVariant._id) : ''}
                             onChange={(e) => {
                               const variant = product.variants.find(v =>
                                 ('id' in v ? v.id : v._id) === e.target.value
@@ -917,7 +917,7 @@ function ProductPageContent({ initialProduct = null }: ProductPageContentProps) 
                       const variantName = 'name' in v ? v.name : v.sku || '';
                       return { label: variantName, value: variantId };
                     })}
-                    value={selectedVariant?.id}
+                    value={selectedVariant ? ('id' in selectedVariant ? selectedVariant.id : selectedVariant._id) : undefined}
                     onValueChange={(value: string | number) => {
                       const variant = product.variants.find(v =>
                         ('id' in v ? v.id : v._id) === value

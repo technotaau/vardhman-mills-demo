@@ -243,7 +243,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
     phone: user?.phone || '',
     dateOfBirth: '',
     gender: undefined,
-    street: user?.addresses?.[0]?.addressLine1 || user?.addresses?.[0]?.address || '',
+    street: user?.addresses?.[0]?.addressLine1 || '',
     city: user?.addresses?.[0]?.city || '',
     state: user?.addresses?.[0]?.state || '',
     zipCode: user?.addresses?.[0]?.postalCode || '',
@@ -521,13 +521,26 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
           lastName: formData.lastName,
           phone: formData.phone,
           preferences: {
-            ...user?.preferences,
+            currency: user?.preferences?.currency || 'INR',
             language: formData.language || 'en',
+            notifications: {
+              email: true,
+              sms: false,
+              push: true,
+              marketing: false,
+            },
+            privacy: {
+              profileVisibility: user?.preferences?.privacy?.profileVisibility || 'public',
+              activityVisible: user?.preferences?.privacy?.activityVisible || true,
+            },
           },
           privacySettings: {
-            ...user?.privacySettings,
             showEmail: formData.showEmail || false,
             showPhone: formData.showPhone || false,
+            showAddress: user?.privacySettings?.showAddress || false,
+            showOrders: user?.privacySettings?.showOrders || false,
+            allowDataCollection: user?.privacySettings?.allowDataCollection || false,
+            allowMarketing: user?.privacySettings?.allowMarketing || false,
           },
         });
       }
@@ -558,7 +571,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [validateForm, activeUserId, formData, updateProfile, user?.preferences?.theme, notification, onProfileUpdate]);
+  }, [validateForm, activeUserId, formData, updateProfile, user, notification, onProfileUpdate]);
 
   const handleCancel = useCallback(() => {
     if (hasUnsavedChanges && showUnsavedWarning) {
