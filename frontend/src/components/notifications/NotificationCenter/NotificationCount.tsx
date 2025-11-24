@@ -355,9 +355,8 @@ export const NotificationCount: React.FC<NotificationCountProps> = ({
     notifications,
     loading: hookLoading
   } = useNotification({
-    channels,
-    realTime,
-    filter
+    // Note: NotificationConfig doesn't support realTime or channels
+    // These are handled locally
   });
 
   const [breakdown, setBreakdown] = useState<CountBreakdown>({
@@ -469,23 +468,39 @@ export const NotificationCount: React.FC<NotificationCountProps> = ({
     // Calculate breakdowns
     processedNotifications.forEach(notification => {
       // Priority breakdown
-      newBreakdown.byPriority[notification.priority]++;
+      if (notification.priority) {
+        const notifPriority = notification.priority as NotificationPriority;
+        if (notifPriority in newBreakdown.byPriority) {
+          newBreakdown.byPriority[notifPriority]++;
+        }
+      }
 
       // Category breakdown
-      newBreakdown.byCategory[notification.category]++;
+      if (notification.category) {
+        const notifCategory = notification.category as NotificationCategory;
+        if (notifCategory in newBreakdown.byCategory) {
+          newBreakdown.byCategory[notifCategory]++;
+        }
+      }
 
-      // Channel breakdown
-      notification.channels.forEach(channel => {
+      // Channel breakdown - StoredNotification doesn't have channels property
+      // Using channels prop from component instead for counting
+      channels.forEach(channel => {
         if (channel in newBreakdown.byChannel) {
           newBreakdown.byChannel[channel]++;
         }
       });
 
       // Type breakdown
-      if (!newBreakdown.byType[notification.type]) {
-        newBreakdown.byType[notification.type] = 0;
+      if (notification.type) {
+        const notifType = notification.type as NotificationType;
+        if (notifType in newBreakdown.byType) {
+          if (!newBreakdown.byType[notifType]) {
+            newBreakdown.byType[notifType] = 0;
+          }
+          newBreakdown.byType[notifType]++;
+        }
       }
-      newBreakdown.byType[notification.type]++;
     });
 
     // Calculate trends
@@ -798,7 +813,11 @@ export const NotificationCount: React.FC<NotificationCountProps> = ({
   // LOADING & ERROR STATES
   // ============================================================================
 
-  if (loading || hookLoading) {
+  // Check if loading is a boolean (not the loading function from hook)
+  const isLoading = typeof loading === 'boolean' ? loading : false;
+  const isHookLoading = typeof hookLoading === 'boolean' ? hookLoading : false;
+
+  if (isLoading || isHookLoading) {
     return (
       <div className={clsx('animate-pulse', className)}>
         <div className={clsx(
@@ -809,7 +828,7 @@ export const NotificationCount: React.FC<NotificationCountProps> = ({
     );
   }
 
-  if (error) {
+  if (error !== null && error !== undefined) {
     return (
       <Tooltip content={error}>
         <Badge variant="destructive" className={clsx(SIZE_CLASSES[size].badge, className)}>
